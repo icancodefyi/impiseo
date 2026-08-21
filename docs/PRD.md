@@ -73,6 +73,47 @@ Deterministic rules first (cheap, explainable, trustworthy), LLM layer second (d
 
 LLM layer: batch opportunities → content briefs (outline + target keywords + word count) + drafted fixes. Provider TBD (OpenAI/Anthropic).
 
+### ⬜ Phase 3.5 — Integrations framework + product analytics join
+
+Built as a **provider connector system** (not hardcoded integrations) so new sources plug in without schema changes.
+
+**Unified model**
+
+```
+connections {
+  id, user_id,
+  provider,               -- 'gsc' | 'posthog' | future: ga4, search-ads, stripe...
+  credentials_enc,        -- encrypted JSON (OAuth tokens or API keys)
+  status,                 -- active | error | expired
+  connected_at
+}
+```
+
+```ts
+interface ProviderAdapter {
+  id: string;
+  label: string;
+  authType: "oauth" | "api_key";
+  validate(creds): Promise<{ ok: boolean; error?: string }>;
+  ingest(ctx: { connectionId: string; from: Date; to: Date }): Promise<Row[]>;
+}
+```
+
+Launch providers (only these two at MVP):
+- **GSC** — `authType: oauth`, flows through NextAuth (already implemented); feeds impressions/clicks/position
+- **PostHog** — `authType: api_key` (personal API key + project ID, validated on save); feeds pageviews/conversions
+
+UI: `/integrations` settings page with connector cards (Connected / Not connected states). Dashboard sections depending on a missing provider show contextual upsell ("Connect PostHog to unlock conversion insights").
+
+Join key: GSC `page` dimension ↔ PostHog `$pathname`.
+
+- Nightly ingestion of pageviews + conversion events (customer picks which events count as conversions)
+- Extend `daily_metrics` with `conversions` column
+- New opportunity rules:
+  - **Conversion gap**: high organic traffic + zero/near-zero conversions → intent mismatch or CTA failure alert
+  - **Revenue-first prioritization**: pages converting well but ranking poorly → weight striking-distance opportunities by estimated value
+  - **Page ROI score**: revenue-per-click across all pages → sort every opportunity list by impact
+
 ### ⬜ Phase 4 — SaaS packaging
 
 - **Stripe billing**: Free (1 site, rules only) → $29/mo (3 sites + AI briefs) → $79/mo (10 sites + digests + exports)
@@ -105,7 +146,6 @@ briefs              (id, opportunity_id, model, prompt, output_md, created_at)
 
 ## 7. Future / parked ideas
 
-- **PostHog × GSC join** (differentiator): which organic landing pages actually convert to signups vs just collecting clicks — "5k clicks/month, zero conversions" insights. Park until post-MVP.
 - Competitor SERP data via third-party SERP API
 - Push fixes as PRs (requires GitHub integration — revisit only after strong demand)
 

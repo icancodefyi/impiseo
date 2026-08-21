@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { signIn, signOut } from "next-auth/react";
 import {
   Area,
@@ -150,6 +151,23 @@ function MetricTable({ title, rows, isPages }: { title: string; rows: MetricRow[
   );
 }
 
+export type PostHogStats = {
+  connected: boolean;
+  totals: { pageviews: number; visitors: number };
+  daily: { date: string; views: number; visitors: number }[];
+  topPages: { path: string; views: number; visitors: number }[];
+};
+
+type JoinedRow = {
+  path: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  views: number;
+  visitors: number;
+};
+
 export default function Dashboard() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [sites, setSites] = useState<Site[]>([]);
@@ -158,6 +176,8 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [phStats, setPhStats] = useState<PostHogStats | null>(null);
+  const [joined, setJoined] = useState<{ connected: boolean; rows: JoinedRow[] } | null>(null);
 
   const loadStats = useCallback((siteUrl: string, rangeDays: number) => {
     setLoading(true);
@@ -170,6 +190,20 @@ export default function Dashboard() {
       .then(setStats)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+  }, []);
+
+  const loadAnalytics = useCallback((rangeDays: number) => {
+    fetch(`/api/analytics?days=${rangeDays}`)
+      .then(async (res) => res.json())
+      .then(setPhStats)
+      .catch(() => setPhStats(null));
+  }, []);
+
+  const loadJoined = useCallback((siteUrl: string, rangeDays: number) => {
+    fetch(`/api/insights?site=${encodeURIComponent(siteUrl)}&days=${rangeDays}`)
+      .then(async (res) => (res.ok ? res.json() : { connected: false, rows: [] }))
+      .then(setJoined)
+      .catch(() => setJoined(null));
   }, []);
 
   useEffect(() => {
@@ -187,26 +221,33 @@ export default function Dashboard() {
         }
         setLoggedIn(true);
         setSites(data.sites ?? []);
+        loadAnalytics(28);
         if (data.sites?.length) {
           const saved = localStorage.getItem("gsc_site");
           const initial = data.sites.some((s: Site) => s.url === saved) ? saved : data.sites[0].url;
           setSite(initial);
           localStorage.setItem("gsc_site", initial);
           loadStats(initial, 28);
+          loadJoined(initial, 28);
         }
       })
       .catch(() => setLoggedIn(false));
-  }, [loadStats]);
+  }, [loadStats, loadAnalytics, loadJoined]);
 
   function selectSite(url: string) {
     setSite(url);
     localStorage.setItem("gsc_site", url);
     loadStats(url, days);
+    loadJoined(url, days);
   }
 
   function selectRange(d: number) {
     setDays(d);
-    if (site) loadStats(site, d);
+    if (site) {
+      loadStats(site, d);
+      loadJoined(site, d);
+    }
+    loadAnalytics(d);
   }
 
   if (loggedIn === null) {
@@ -283,6 +324,12 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
+          <Link
+            href="/integrations"
+            className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 transition hover:text-zinc-200"
+          >
+            Integrations
+          </Link>
           <button
             onClick={() => signOut({ redirectTo: "/" })}
             className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 transition hover:text-zinc-200"
@@ -360,6 +407,119 @@ export default function Dashboard() {
             <MetricTable title="Top queries" rows={stats!.queries} />
             <MetricTable title="Top pages" rows={stats!.pages} isPages />
           </section>
+
+          {joined?.connected && joined.rows.length > 0 && (
+            <section className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-5 py-3.5">
+                <div>
+                  <h2 className="text-[0.8125rem] font-semibold tracking-tight text-zinc-200">
+                    Search × Behavior
+                  </h2>
+                  <p className="mt-0.5 text-xs text-zinc-500">
+                    Search Console clicks vs PostHog pageviews · last {days} days · GSC data lags ~3 days
+                  </p>
+                </div>
+              </div>
+              <div className="max-h-[420px] overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-zinc-900 text-left text-xs uppercase tracking-wider text-zinc-500">
+                    <tr>
+                      <th className="px-5 py-2.5 font-medium">Page</th>
+                      <th className="px-3 py-2.5 text-right font-medium">Clicks</th>
+                      <th className="px-3 py-2.5 text-right font-medium">Impr.</th>
+                      <th className="px-3 py-2.5 text-right font-medium">Pos.</th>
+                      <th className="px-3 py-2.5 text-right font-medium">Views</th>
+                      <th className="px-5 py-2.5 text-right font-medium">Visitors</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {joined.rows.map((r) => (
+                      <tr key={r.path} className="border-t border-zinc-800/60 hover:bg-zinc-800/30">
+                        <td className="max-w-[300px] truncate px-5 py-2.5 font-medium text-zinc-200" title={r.path}>
+                          {r.path}
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-medium tabular-nums">{nf.format(r.clicks)}</td>
+                        <td className="px-3 py-2.5 text-right tabular-nums text-zinc-400">{nf.format(r.impressions)}</td>
+                        <td className="px-3 py-2.5 text-right">
+                          <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium tabular-nums ${posColor(r.position)}`}>
+                            {fmtPos(r.position)}
+                          </span>
+                        </td>
+                        <td className={`px-3 py-2.5 text-right font-medium tabular-nums ${r.clicks > 0 && r.views === 0 ? "text-red-400" : ""}`}>
+                          {nf.format(r.views)}
+                        </td>
+                        <td className="px-5 py-2.5 text-right tabular-nums text-zinc-400">{nf.format(r.visitors)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {phStats && !phStats.connected && (
+            <section className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/40 px-5 py-4">
+              <p className="text-sm text-zinc-400">
+                🦔 Connect PostHog to see what visitors do after they arrive from search.
+              </p>
+              <Link
+                href="/integrations"
+                className="rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200"
+              >
+                Connect PostHog
+              </Link>
+            </section>
+          )}
+
+          {phStats?.connected && phStats.totals && (
+            <section className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-5 py-3.5">
+                <div>
+                  <h2 className="text-[0.8125rem] font-semibold tracking-tight text-zinc-200">
+                    Product analytics
+                  </h2>
+                  <p className="mt-0.5 text-xs text-zinc-500">PostHog · last {days} days</p>
+                </div>
+                <div className="flex gap-6">
+                  <div>
+                    <p className="text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-zinc-500">Visitors</p>
+                    <p className="text-lg font-[620] leading-tight tabular-nums">{nf.format(phStats.totals.visitors)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-zinc-500">Pageviews</p>
+                    <p className="text-lg font-[620] leading-tight tabular-nums">{nf.format(phStats.totals.pageviews)}</p>
+                  </div>
+                </div>
+              </div>
+              <table className="w-full text-sm">
+                <thead className="text-left text-xs uppercase tracking-wider text-zinc-500">
+                  <tr>
+                    <th className="px-5 py-2.5 font-medium">Path</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Views</th>
+                    <th className="px-5 py-2.5 text-right font-medium">Visitors</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {phStats.topPages.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="px-5 py-8 text-center text-zinc-500">
+                        No pageview events yet
+                      </td>
+                    </tr>
+                  )}
+                  {phStats.topPages.map((p) => (
+                    <tr key={p.path} className="border-t border-zinc-800/60 hover:bg-zinc-800/30">
+                      <td className="max-w-[420px] truncate px-5 py-2.5 font-medium text-zinc-200" title={p.path}>
+                        {p.path}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-medium tabular-nums">{nf.format(p.views)}</td>
+                      <td className="px-5 py-2.5 text-right tabular-nums text-zinc-400">{nf.format(p.visitors)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
         </>
       )}
     </main>

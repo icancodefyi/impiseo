@@ -1,8 +1,8 @@
-import "next-auth";
-import "@auth/core/jwt";
+import type { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
+    user: { id?: string } & DefaultSession["user"];
     access_token?: string;
     error?: string;
   }
