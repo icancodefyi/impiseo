@@ -1,0 +1,80 @@
+"use client";
+
+import Link from "next/link";
+import { IconPlugConnected } from "@tabler/icons-react";
+import { useDashboard } from "@/lib/dashboard-context";
+import { ErrorBanner, Loader, PageHeader, nf, posColor } from "@/components/widgets";
+
+function fmtPos(v: number) {
+  return v ? v.toFixed(1) : "–";
+}
+
+export default function PagesPage() {
+  const { joined, stats, loading, error, days } = useDashboard();
+  const rows = joined?.connected ? joined.rows : [];
+
+  if (!stats && loading) return <Loader label="Fetching Search Console data…" />;
+
+  return (
+    <div className="space-y-4">
+      <PageHeader
+        title="Pages"
+        subtitle={`Search Console clicks vs PostHog pageviews · last ${days} days · GSC data lags ~3 days`}
+      />
+
+      {error && <ErrorBanner message={error} />}
+
+      <section className="rounded-xl border border-zinc-800 bg-zinc-900 shadow-sm">
+        {!joined && (
+          <div className="px-5 py-10 text-center text-sm text-zinc-500">Loading joined data…</div>
+        )}
+        {joined && !joined.connected && (
+          <div className="px-5 py-10 text-center text-sm text-zinc-500">
+            <IconPlugConnected size={20} className="mx-auto mb-2 text-zinc-600" />
+            Connect PostHog in{" "}
+            <Link href="/integrations" className="font-medium text-emerald-400 hover:text-emerald-300">
+              Integrations
+            </Link>{" "}
+            to join behavior data with search clicks.
+          </div>
+        )}
+        {rows.length > 0 && (
+          <div className="max-h-[640px] overflow-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="sticky top-0 bg-zinc-900 text-left text-xs uppercase tracking-wider text-zinc-500">
+                <tr>
+                  <th className="px-5 py-2.5 font-medium">Page</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Clicks</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Impr.</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Pos.</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Views</th>
+                  <th className="px-5 py-2.5 text-right font-medium">Visitors</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.path} className="border-t border-zinc-800/60 hover:bg-zinc-800/30">
+                    <td className="max-w-[360px] truncate px-5 py-2.5 font-medium text-zinc-200" title={r.path}>
+                      {r.path}
+                    </td>
+                    <td className="px-3 py-2.5 text-right font-medium tabular-nums">{nf.format(r.clicks)}</td>
+                    <td className="px-3 py-2.5 text-right tabular-nums text-zinc-400">{nf.format(r.impressions)}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium tabular-nums ${posColor(r.position)}`}>
+                        {fmtPos(r.position)}
+                      </span>
+                    </td>
+                    <td className={`px-3 py-2.5 text-right font-medium tabular-nums ${r.clicks > 0 && r.views === 0 ? "text-red-400" : ""}`}>
+                      {nf.format(r.views)}
+                    </td>
+                    <td className="px-5 py-2.5 text-right tabular-nums text-zinc-400">{nf.format(r.visitors)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

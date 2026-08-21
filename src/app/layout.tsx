@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SEO Console",
-  description: "Google Search Console analytics & content recommendations",
+  title: "Impiseo",
+  description: "Search performance analytics & content recommendations",
 };
 
 export const viewport: Viewport = {
