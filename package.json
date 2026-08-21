@@ -9,11 +9,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "googleapis": "^176.0.0",
     "next": "16.3.1",
+    "next-auth": "5.0.0-beta.32",
+    "posthog-js": "^1.418.7",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
+    "@auth/core": "0.41.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
