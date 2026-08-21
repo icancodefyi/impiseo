@@ -88,10 +88,10 @@ function KpiCard({
   invertDelta?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-      <p className="text-xs uppercase tracking-wider text-zinc-500">{label}</p>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className="text-3xl font-semibold tabular-nums">{value}</span>
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-sm">
+      <p className="text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-zinc-500">{label}</p>
+      <div className="mt-1.5 flex items-baseline gap-2">
+        <span className="text-[1.75rem] leading-none tracking-tight tabular-nums font-[640]">{value}</span>
         <Delta value={delta} invert={invertDelta} />
       </div>
     </div>
@@ -107,8 +107,8 @@ function posColor(pos: number) {
 
 function MetricTable({ title, rows, isPages }: { title: string; rows: MetricRow[]; isPages?: boolean }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900">
-      <h2 className="border-b border-zinc-800 px-5 py-4 text-sm font-semibold">{title}</h2>
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 shadow-sm">
+      <h2 className="border-b border-zinc-800 px-5 py-3.5 text-[0.8125rem] font-semibold tracking-tight text-zinc-200">{title}</h2>
       <div className="max-h-[420px] overflow-y-auto">
         <table className="w-full text-sm">
           <thead className="sticky top-0 bg-zinc-900 text-left text-xs uppercase tracking-wider text-zinc-500">
@@ -130,10 +130,10 @@ function MetricTable({ title, rows, isPages }: { title: string; rows: MetricRow[
             )}
             {rows.map((r) => (
               <tr key={r.key} className="border-t border-zinc-800/60 hover:bg-zinc-800/30">
-                <td className="max-w-[280px] truncate px-5 py-2.5" title={r.key}>
+                <td className="max-w-[280px] truncate px-5 py-2.5 font-medium text-zinc-200" title={r.key}>
                   {r.key || "(not provided)"}
                 </td>
-                <td className="px-3 py-2.5 text-right tabular-nums">{nf.format(r.clicks)}</td>
+                <td className="px-3 py-2.5 text-right font-medium tabular-nums">{nf.format(r.clicks)}</td>
                 <td className="px-3 py-2.5 text-right tabular-nums text-zinc-400">{nf.format(r.impressions)}</td>
                 <td className="px-3 py-2.5 text-right tabular-nums text-zinc-400">{fmtPct(r.ctr)}</td>
                 <td className="px-5 py-2.5 text-right">
@@ -220,9 +220,9 @@ export default function Dashboard() {
   if (!loggedIn) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
-        <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center">
-          <h1 className="text-xl font-semibold">SEO Console</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+        <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center shadow-xl shadow-black/20">
+          <h1 className="text-2xl font-semibold tracking-tight">SEO Console</h1>
+          <p className="mt-2.5 text-sm leading-relaxed text-zinc-400">
             Connect your Google account to pull Search Console data into your dashboard.
           </p>
           <button
@@ -252,7 +252,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/15 text-lg">📈</div>
           <div>
-            <h1 className="text-lg font-semibold leading-tight">SEO Console</h1>
+            <h1 className="text-[1.0625rem] font-semibold leading-tight tracking-tight">SEO Console</h1>
             <p className="text-xs text-zinc-500">Google Search Console analytics</p>
           </div>
         </div>
@@ -313,7 +313,7 @@ export default function Dashboard() {
 
           <section className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900 p-5">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Performance</h2>
+              <h2 className="text-[0.8125rem] font-semibold tracking-tight text-zinc-200">Performance</h2>
               <p className="text-xs text-zinc-500">
                 {shortDate(stats!.range.start)} – {shortDate(stats!.range.end)}
                 <span className="mx-2 text-zinc-700">vs</span>
