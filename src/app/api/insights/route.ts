@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   if (!site) {
     return NextResponse.json({ error: "missing site param" }, { status: 400 });
   }
-  const days = Math.min(Math.max(Number(req.nextUrl.searchParams.get("days") ?? 28), 3), 90);
+  const days = Math.min(Math.max(Number(req.nextUrl.searchParams.get("days") ?? 28), 1), 90);
 
   const ph = (await getConnections(userId)).find(
     (c) => c.provider === "posthog" && c.apiKey

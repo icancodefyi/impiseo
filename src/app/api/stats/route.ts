@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
   if (!site) {
     return NextResponse.json({ error: "missing site param" }, { status: 400 });
   }
-  const days = Math.min(Math.max(Number(req.nextUrl.searchParams.get("days") ?? 28), 3), 90);
+  const days = Math.min(Math.max(Number(req.nextUrl.searchParams.get("days") ?? 28), 1), 90);
 
   const end = addDays(new Date(), -3);
   const start = addDays(end, -(days - 1));

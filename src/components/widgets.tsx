@@ -102,6 +102,7 @@ export function MetricTable({ title, rows, isPages }: { title: string; rows: Met
 }
 
 const RANGES = [
+  { label: "1d", days: 1 },
   { label: "7d", days: 7 },
   { label: "28d", days: 28 },
   { label: "90d", days: 90 },

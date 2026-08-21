@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ connected: false }, { status: 200 });
   }
 
-  const days = Math.min(Math.max(Number(req.nextUrl.searchParams.get("days") ?? 28), 3), 90);
+  const days = Math.min(Math.max(Number(req.nextUrl.searchParams.get("days") ?? 28), 1), 90);
 
   try {
     const stats = await fetchPosthogStats({
