@@ -183,7 +183,7 @@ export function SignInCard() {
           Connect your Google account to pull Search Console data into your dashboard.
         </p>
         <button
-          onClick={() => signIn("google", { redirectTo: "/" })}
+          onClick={() => signIn("google", { redirectTo: "/dashboard" })}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>

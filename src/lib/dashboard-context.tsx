@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { UserDoc } from "@/lib/db";
 
 export type Site = { url: string; permissionLevel: string };
 
@@ -40,8 +42,11 @@ export type JoinedRow = {
   visitors: number;
 };
 
+type MeResponse = { loggedIn: boolean; profile: Omit<UserDoc, "_id"> | null };
+
 type DashboardState = {
   loggedIn: boolean | null;
+  profile: Omit<UserDoc, "_id"> | null;
   sites: Site[];
   site: string;
   days: number;
@@ -63,7 +68,9 @@ export function useDashboard() {
 }
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const [profile, setProfile] = useState<Omit<UserDoc, "_id"> | null>(null);
   const [sites, setSites] = useState<Site[]>([]);
   const [site, setSite] = useState("");
   const [days, setDays] = useState(28);
@@ -101,35 +108,43 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    fetch("/api/sites")
-      .then(async (res) => {
-        if (res.status === 401) return null;
-        return res.json();
-      })
-      .then((data) => {
-        if (!data) {
+    let redirected = false;
+    fetch("/api/me")
+      .then(async (res) => res.json())
+      .then((data: MeResponse) => {
+        if (!data.loggedIn) {
           setLoggedIn(false);
           return;
         }
-        setLoggedIn(true);
-        setSites(data.sites ?? []);
-        loadAnalytics(28);
-        if (data.sites?.length) {
-          const saved = localStorage.getItem("gsc_site");
-          const initial = data.sites.some((s: Site) => s.url === saved) ? saved : data.sites[0].url;
-          setSite(initial);
-          localStorage.setItem("gsc_site", initial);
-          loadStats(initial, 28);
-          loadJoined(initial, 28);
+        if (!data.profile?.onboarded || !data.profile.activeProperty) {
+          redirected = true;
+          router.replace("/onboarding");
+          return;
         }
+        const p = data.profile;
+        setLoggedIn(true);
+        setProfile(p);
+        const active = p.properties.find((prop) => prop.url === p.activeProperty);
+        const lockedSites: Site[] = [
+          {
+            url: p.activeProperty,
+            permissionLevel: active?.permissionLevel ?? "owner",
+          },
+        ];
+        setSites(lockedSites);
+        setSite(p.activeProperty);
+        loadStats(p.activeProperty, 28);
+        loadJoined(p.activeProperty, 28);
+        loadAnalytics(28);
       })
-      .catch(() => setLoggedIn(false));
-  }, [loadStats, loadAnalytics, loadJoined]);
+      .catch(() => {
+        if (!redirected) setLoggedIn(false);
+      });
+  }, [router, loadStats, loadAnalytics, loadJoined]);
 
   const selectSite = useCallback(
     (url: string) => {
       setSite(url);
-      localStorage.setItem("gsc_site", url);
       loadStats(url, days);
       loadJoined(url, days);
     },
@@ -152,6 +167,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     <DashboardContext.Provider
       value={{
         loggedIn,
+        profile,
         sites,
         site,
         days,

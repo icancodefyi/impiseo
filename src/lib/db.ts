@@ -59,10 +59,27 @@ export type RecEnhancementDoc = {
   updatedAt: Date;
 };
 
+export type UserDoc = {
+  userId: string;
+  email: string;
+  onboarded: boolean;
+  siteUrl: string;
+  product: {
+    type?: string;
+    audience?: string;
+    goal?: string;
+  };
+  properties: { url: string; permissionLevel: string; addedAt: Date }[];
+  activeProperty: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 type Collections = {
   pages: import("mongodb").Collection<PageDoc>;
   page_content: import("mongodb").Collection<PageContentDoc>;
   rec_enhancements: import("mongodb").Collection<RecEnhancementDoc>;
+  users: import("mongodb").Collection<UserDoc>;
 };
 
 let collections: Collections | null = null;
@@ -75,12 +92,14 @@ export async function getCollections(): Promise<Collections> {
   const pages = db.collection<PageDoc>("pages");
   const page_content = db.collection<PageContentDoc>("page_content");
   const rec_enhancements = db.collection<RecEnhancementDoc>("rec_enhancements");
+  const users = db.collection<UserDoc>("users");
   await Promise.all([
     pages.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
     page_content.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
     rec_enhancements.createIndex({ userId: 1, siteUrl: 1, recId: 1 }, { unique: true }),
+    users.createIndex({ userId: 1 }, { unique: true }),
   ]);
 
-  collections = { pages, page_content, rec_enhancements };
+  collections = { pages, page_content, rec_enhancements, users };
   return collections;
 }
