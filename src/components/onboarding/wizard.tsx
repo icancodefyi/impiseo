@@ -42,19 +42,19 @@ function StepDots({ step }: { step: number }) {
     <div className="flex items-center gap-2">
       {labels.map((label, i) => (
         <div key={label} className="flex items-center gap-2">
-          {i > 0 && <span className="h-px w-6 bg-zinc-800" />}
+          {i > 0 && <span className="h-px w-6 bg-hairline" />}
           <span
             className={`flex items-center gap-1.5 text-xs ${
-              step === i + 1 ? "font-medium text-zinc-100" : step > i + 1 ? "text-zinc-500" : "text-zinc-600"
+              step === i + 1 ? "font-medium text-ink" : step > i + 1 ? "text-ink-subtle" : "text-ink-tertiary"
             }`}
           >
             <span
               className={`flex h-5 w-5 items-center justify-center rounded-full border text-[0.625rem] ${
                 step > i + 1
-                  ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-400"
+                  ? "border-success/40 bg-success/10 text-emerald-400"
                   : step === i + 1
-                    ? "border-zinc-600 bg-zinc-800 text-zinc-100"
-                    : "border-zinc-800 text-zinc-600"
+                    ? "border-hairline-strong bg-surface-3 text-ink"
+                    : "border-hairline text-ink-tertiary"
               }`}
             >
               {step > i + 1 ? <IconCheck size={11} stroke={2.5} /> : i + 1}
@@ -80,10 +80,10 @@ function OptionCard({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg border px-3 py-2 text-left text-sm transition ${
+      className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
         selected
-          ? "border-emerald-500/50 bg-emerald-500/10 font-medium text-emerald-300"
-          : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+          ? "border-primary/60 bg-primary/10 font-medium text-ink"
+          : "border-hairline bg-surface-2/40 text-ink-subtle hover:border-hairline-strong hover:text-ink-muted"
       }`}
     >
       {children}
@@ -172,7 +172,7 @@ export function OnboardingWizard() {
   if (authState === "checking") {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="animate-pulse text-sm text-zinc-500">Loading…</p>
+        <p className="animate-pulse text-sm text-ink-tertiary">Loading…</p>
       </main>
     );
   }
@@ -180,9 +180,9 @@ export function OnboardingWizard() {
   if (authState === "signedOut") {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
-        <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center shadow-xl shadow-black/20">
-          <h1 className="text-xl font-semibold tracking-tight">Sign in to continue</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+        <div className="w-full max-w-sm rounded-xl border border-hairline bg-surface-1 p-8 text-center">
+          <h1 className="text-xl font-semibold tracking-tight text-ink">Sign in to continue</h1>
+          <p className="mt-2 text-sm text-ink-subtle">
             We need your Google account to read your Search Console properties.
           </p>
           <button
@@ -199,16 +199,19 @@ export function OnboardingWizard() {
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-12">
       <div className="w-full max-w-lg">
-        <p className="text-sm font-semibold tracking-tight">Impiseo</p>
+        <div className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-[11px] font-bold text-white">I</span>
+          <span className="text-sm font-semibold tracking-tight text-ink">Impiseo</span>
+        </div>
         <div className="mt-6">
           <StepDots step={step} />
         </div>
 
-        <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-7">
+        <div className="mt-4 rounded-xl border border-hairline bg-surface-1 p-7">
           {step === 1 && (
             <>
-              <h1 className="text-lg font-semibold tracking-tight">What website are we improving?</h1>
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-400">
+              <h1 className="text-lg font-semibold tracking-tight text-ink">What website are we improving?</h1>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-subtle">
                 This is the site you want more organic traffic for.
               </p>
               <input
@@ -217,7 +220,7 @@ export function OnboardingWizard() {
                 onChange={(e) => setSiteInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && normalizedSite && setStep(2)}
                 placeholder="example.com"
-                className="mt-5 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-zinc-600"
+                className="mt-5 w-full rounded-lg border border-hairline bg-canvas px-3.5 py-2.5 text-sm text-ink outline-none placeholder:text-ink-tertiary transition-colors focus:border-primary-focus"
               />
               {siteInput.trim() && (
                 <p className={`mt-2 text-xs ${normalizedSite ? "text-emerald-400" : "text-red-400"}`}>
@@ -228,7 +231,7 @@ export function OnboardingWizard() {
                 <button
                   disabled={!normalizedSite}
                   onClick={() => setStep(2)}
-                  className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-ink-tertiary"
                 >
                   Continue
                 </button>
@@ -238,12 +241,12 @@ export function OnboardingWizard() {
 
           {step === 2 && (
             <>
-              <h1 className="text-lg font-semibold tracking-tight">Tell us about your product</h1>
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-400">
+              <h1 className="text-lg font-semibold tracking-tight text-ink">Tell us about your product</h1>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-subtle">
                 The copilot uses this to tailor every recommendation.
               </p>
 
-              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-zinc-500">
+              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-ink-tertiary">
                 What is it?
               </label>
               <div className="mt-2 grid grid-cols-2 gap-2">
@@ -254,7 +257,7 @@ export function OnboardingWizard() {
                 ))}
               </div>
 
-              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-zinc-500">
+              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-ink-tertiary">
                 Who is it for?
               </label>
               <input
@@ -262,10 +265,10 @@ export function OnboardingWizard() {
                 onChange={(e) => setAudience(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && goal && goToPropertyStep()}
                 placeholder="e.g. indie founders, UPSC aspirants…"
-                className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-zinc-600"
+                className="mt-2 w-full rounded-lg border border-hairline bg-canvas px-3.5 py-2.5 text-sm text-ink outline-none placeholder:text-ink-tertiary transition-colors focus:border-primary-focus"
               />
 
-              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-zinc-500">
+              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-ink-tertiary">
                 Your #1 goal right now
               </label>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -279,14 +282,14 @@ export function OnboardingWizard() {
               <div className="mt-7 flex items-center justify-between">
                 <button
                   onClick={() => setStep(1)}
-                  className="text-sm text-zinc-500 transition hover:text-zinc-300"
+                  className="text-sm text-ink-tertiary transition-colors hover:text-ink-muted"
                 >
                   Back
                 </button>
                 <button
                   disabled={!productType || !audience.trim() || !goal}
                   onClick={goToPropertyStep}
-                  className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-ink-tertiary"
                 >
                   Continue
                 </button>
@@ -296,23 +299,23 @@ export function OnboardingWizard() {
 
           {step === 3 && (
             <>
-              <h1 className="text-lg font-semibold tracking-tight">Pick your Search Console property</h1>
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-400">
+              <h1 className="text-lg font-semibold tracking-tight text-ink">Pick your Search Console property</h1>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-subtle">
                 Impiseo reads data from this one property. You&apos;ll be able to add more later.
               </p>
 
-              {sitesLoading && <p className="mt-6 animate-pulse text-sm text-zinc-500">Fetching your properties…</p>}
+              {sitesLoading && <p className="mt-6 animate-pulse text-sm text-ink-tertiary">Fetching your properties…</p>}
 
               {sitesError && (
-                <div className="mt-6 rounded-lg border border-red-900/50 bg-red-950/40 px-4 py-3 text-sm text-red-300">
+                <div className="mt-6 rounded-lg border border-red-500/25 bg-red-500/[0.07] px-4 py-3 text-sm text-red-300">
                   {sitesError}
                 </div>
               )}
 
               {sites && sites.length === 0 && !sitesError && (
-                <div className="mt-6 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-400">
+                <div className="mt-6 rounded-lg border border-hairline bg-surface-2/50 px-4 py-3 text-sm text-ink-subtle">
                   No verified properties found on this Google account. Verify{" "}
-                  <span className="font-medium text-zinc-200">{prettySite(normalizedSite ?? "")}</span> in{" "}
+                  <span className="font-medium text-ink">{prettySite(normalizedSite ?? "")}</span> in{" "}
                   <a href="https://search.google.com/search-console" target="_blank" rel="noreferrer" className="underline">
                     Search Console
                   </a>{" "}
@@ -327,14 +330,14 @@ export function OnboardingWizard() {
                       type="button"
                       key={s.url}
                       onClick={() => setPropertyUrl(s.url)}
-                      className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition ${
+                      className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                         propertyUrl === s.url
-                          ? "border-emerald-500/50 bg-emerald-500/10 font-medium text-emerald-300"
-                          : "border-zinc-800 bg-zinc-900 text-zinc-300 hover:border-zinc-700"
+                          ? "border-primary/60 bg-primary/10 font-medium text-ink"
+                          : "border-hairline bg-surface-2/40 text-ink-muted hover:border-hairline-strong"
                       }`}
                     >
                       <span>{prettySite(s.url)}</span>
-                      <span className="text-xs text-zinc-500">{s.permissionLevel}</span>
+                      <span className="text-xs text-ink-tertiary">{s.permissionLevel}</span>
                     </button>
                   ))}
                 </div>
@@ -344,14 +347,14 @@ export function OnboardingWizard() {
                 <button
                   onClick={() => setStep(2)}
                   disabled={saving}
-                  className="text-sm text-zinc-500 transition hover:text-zinc-300"
+                  className="text-sm text-ink-tertiary transition-colors hover:text-ink-muted"
                 >
                   Back
                 </button>
                 <button
                   disabled={!propertyUrl || saving}
                   onClick={finish}
-                  className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-ink-tertiary"
                 >
                   {saving ? "Setting up…" : "Finish setup"}
                 </button>

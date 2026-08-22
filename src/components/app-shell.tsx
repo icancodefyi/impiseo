@@ -10,7 +10,6 @@ import {
   IconLogout,
   IconPlug,
   IconSearch,
-  IconTrendingUp,
 } from "@tabler/icons-react";
 import { useDashboard } from "@/lib/dashboard-context";
 import { Loader, SignInCard } from "@/components/widgets";
@@ -20,45 +19,68 @@ const NAV = [
   { href: "/dashboard/site-pages", label: "Pages", icon: IconFileText },
   { href: "/dashboard/queries", label: "Queries", icon: IconSearch },
 ];
+const NAV_BOTTOM = [
+  { href: "/dashboard/recommendations", label: "Recommendations", icon: IconBulb },
+  { href: "/integrations", label: "Integrations", icon: IconPlug },
+];
+
+function BrandMark({ size = "h-6 w-6", text = "text-[11px]" }: { size?: string; text?: string }) {
+  return (
+    <span
+      className={`flex ${size} shrink-0 items-center justify-center rounded-md bg-primary font-bold text-white ${text}`}
+    >
+      I
+    </span>
+  );
+}
+
+function NavLink({
+  href,
+  label,
+  icon: Icon,
+  active,
+}: {
+  href: string;
+  label: string;
+  icon: typeof IconSearch;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+        active
+          ? "bg-surface-2 font-medium text-ink"
+          : "text-ink-subtle hover:bg-surface-1 hover:text-ink-muted"
+      }`}
+    >
+      <Icon size={16} stroke={1.75} />
+      {label}
+    </Link>
+  );
+}
 
 function Sidebar() {
   const pathname = usePathname();
   return (
-    <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-zinc-800 bg-zinc-950 md:flex">
-      <Link href="/dashboard" className="flex items-center gap-2.5 px-5 py-5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15">
-          <IconTrendingUp size={17} className="text-emerald-400" />
-        </span>
-        <span className="text-[0.9375rem] font-semibold tracking-tight">Impiseo</span>
+    <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-hairline bg-canvas md:flex">
+      <Link href="/dashboard" className="flex items-center gap-2.5 px-5 py-[18px]">
+        <BrandMark />
+        <span className="text-[0.9375rem] font-semibold tracking-tight text-ink">Impiseo</span>
       </Link>
-      <nav className="mt-2 flex flex-col gap-0.5 px-3">
-        {[...NAV, { href: "/dashboard/recommendations", label: "Recommendations", icon: IconBulb }].map((item) => {
-          const active = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition ${
-                active ? "bg-zinc-800/80 font-medium text-zinc-100" : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-              }`}
-            >
-              <Icon size={16} stroke={1.75} />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="mt-3 flex flex-col gap-0.5 px-3">
+        {NAV.map((item) => (
+          <NavLink key={item.href} {...item} active={pathname === item.href} />
+        ))}
+        <div className="mx-3 my-3 border-t border-hairline-tertiary" />
+        {NAV_BOTTOM.map((item) => (
+          <NavLink key={item.href} {...item} active={pathname === item.href} />
+        ))}
       </nav>
       <div className="mt-auto flex flex-col gap-0.5 px-3 pb-5">
-        <Link
-          href="/integrations"
-          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-200"
-        >
-          <IconPlug size={16} stroke={1.75} /> Integrations
-        </Link>
         <button
           onClick={() => signOut({ redirectTo: "/" })}
-          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-200"
+          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-ink-subtle transition-colors hover:bg-surface-1 hover:text-ink-muted"
         >
           <IconLogout size={16} stroke={1.75} /> Log out
         </button>
@@ -69,23 +91,17 @@ function Sidebar() {
 
 function MobileNav() {
   const pathname = usePathname();
-  const items = [
-    ...NAV,
-    { href: "/dashboard/recommendations", label: "Recommendations", icon: IconBulb },
-    { href: "/integrations", label: "Integrations", icon: IconPlug },
-  ];
+  const items = [...NAV, ...NAV_BOTTOM];
   return (
-    <header className="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur md:hidden">
+    <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/95 backdrop-blur md:hidden">
       <div className="flex items-center justify-between px-4 py-3">
-        <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15">
-            <IconTrendingUp size={15} className="text-emerald-400" />
-          </span>
+        <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold tracking-tight text-ink">
+          <BrandMark size="h-7 w-7" text="text-xs" />
           Impiseo
         </Link>
         <button
           onClick={() => signOut({ redirectTo: "/" })}
-          className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-400"
+          className="flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-1 px-2.5 py-1.5 text-xs text-ink-subtle transition-colors hover:text-ink-muted"
         >
           <IconLogout size={13} stroke={1.75} /> Log out
         </button>
@@ -98,8 +114,8 @@ function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs transition ${
-                active ? "bg-zinc-800 font-medium text-zinc-100" : "text-zinc-400 hover:text-zinc-200"
+              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                active ? "bg-surface-2 font-medium text-ink" : "text-ink-subtle hover:text-ink-muted"
               }`}
             >
               <Icon size={14} stroke={1.75} />
@@ -119,7 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (!loggedIn) return <SignInCard />;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-canvas">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileNav />

@@ -4,11 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import type { PublicConnection } from "@/lib/providers/types";
+import { PostHogLogo, SearchConsoleLogo } from "@/components/landing/logos";
 
 type ProviderCardProps = {
   label: string;
   description: string;
   connected: boolean;
+  logo?: React.ReactNode;
   children?: React.ReactNode;
 };
 
@@ -19,24 +21,27 @@ function StatusDot({ ok }: { ok: boolean }) {
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
       )}
       <span
-        className={`relative inline-flex h-2 w-2 rounded-full ${ok ? "bg-emerald-400" : "bg-zinc-600"}`}
+        className={`relative inline-flex h-2 w-2 rounded-full ${ok ? "bg-emerald-400" : "bg-surface-4"}`}
       />
     </span>
   );
 }
 
-function ProviderCard({ label, description, connected, children }: ProviderCardProps) {
+function ProviderCard({ label, description, connected, logo, children }: ProviderCardProps) {
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-sm">
+    <div className="flex flex-col justify-between rounded-xl border border-hairline bg-surface-1 p-5">
       <div>
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-[0.9375rem] font-medium tracking-tight text-zinc-100">{label}</h2>
-          <span className="flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-950 px-2.5 py-1 text-xs text-zinc-400">
+          <div className="flex items-center gap-3">
+            {logo}
+            <h2 className="text-[0.9375rem] font-medium tracking-tight text-ink">{label}</h2>
+          </div>
+          <span className="flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-2.5 py-1 text-xs text-ink-subtle">
             <StatusDot ok={connected} />
             {connected ? "Connected" : "Not connected"}
           </span>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">{description}</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-subtle">{description}</p>
       </div>
       <div className="mt-5">{children}</div>
     </div>
@@ -112,7 +117,7 @@ export default function IntegrationsPage() {
   if (authed === null) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="animate-pulse text-sm text-zinc-500">Loading…</p>
+        <p className="animate-pulse text-sm text-ink-tertiary">Loading…</p>
       </main>
     );
   }
@@ -120,11 +125,11 @@ export default function IntegrationsPage() {
   if (!authed) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-center">
-          <p className="text-sm text-zinc-400">Sign in to manage integrations.</p>
+        <div className="rounded-xl border border-hairline bg-surface-1 p-8 text-center">
+          <p className="text-sm text-ink-subtle">Sign in to manage integrations.</p>
           <Link
             href="/dashboard"
-            className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900"
+            className="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
           >
             Go to dashboard
           </Link>
@@ -137,14 +142,14 @@ export default function IntegrationsPage() {
     <main className="mx-auto max-w-3xl px-6 py-10">
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Integrations</h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h1 className="text-xl font-semibold tracking-tight text-ink">Integrations</h1>
+          <p className="mt-1 text-sm text-ink-tertiary">
             Connect data sources to power your insights.
           </p>
         </div>
         <Link
           href="/dashboard"
-          className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 transition hover:text-zinc-200"
+          className="rounded-lg border border-hairline bg-surface-1 px-3 py-2 text-sm text-ink-subtle transition-colors hover:text-ink-muted"
         >
           ← Dashboard
         </Link>
@@ -155,11 +160,12 @@ export default function IntegrationsPage() {
           label="Google Search Console"
           description="Search performance data — clicks, impressions, CTR and average position for your verified properties."
           connected={gscOk}
+          logo={<SearchConsoleLogo className="h-6 w-6" />}
         >
           {!gscOk && (
             <button
               onClick={() => signIn("google", { redirectTo: "/integrations" })}
-              className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200"
+              className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200"
             >
               Connect Google
             </button>
@@ -170,28 +176,29 @@ export default function IntegrationsPage() {
           label="PostHog"
           description="Product analytics — join conversion behavior with search traffic to see which pages actually drive signups."
           connected={!!posthog}
+          logo={<PostHogLogo className="h-6 w-6" />}
         >
           {posthog ? (
             <div className="space-y-3">
-              <p className="text-sm text-zinc-300">
+              <p className="text-sm text-ink-muted">
                 Project:{" "}
-                <span className="font-medium">
+                <span className="font-medium text-ink">
                   {posthog.projectName ?? posthog.projectId ?? "—"}
                 </span>
                 {posthog.accountEmail && (
-                  <span className="text-zinc-500"> · {posthog.accountEmail}</span>
+                  <span className="text-ink-tertiary"> · {posthog.accountEmail}</span>
                 )}
               </p>
               <button
                 onClick={disconnectPosthog}
-                className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-2 text-sm font-medium text-red-300 transition hover:bg-red-950/60"
+                className="rounded-lg border border-red-500/25 bg-red-500/[0.07] px-4 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-500/[0.12]"
               >
                 Disconnect
               </button>
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-ink-tertiary">
                 PostHog → Settings → Personal API keys → Create key
               </p>
               <div className="flex flex-wrap gap-2">
@@ -200,12 +207,12 @@ export default function IntegrationsPage() {
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="phx_..."
-                  className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 font-mono text-sm outline-none placeholder:text-zinc-700 focus:border-zinc-600"
+                  className="min-w-0 flex-1 rounded-lg border border-hairline bg-canvas px-3 py-2 font-mono text-sm text-ink outline-none placeholder:text-ink-tertiary transition-colors focus:border-primary-focus"
                 />
                 <select
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
-                  className="rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                  className="rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-primary-focus"
                 >
                   <option value="https://us.posthog.com">🇺🇸 US</option>
                   <option value="https://eu.posthog.com">🇪🇺 EU</option>
@@ -213,7 +220,7 @@ export default function IntegrationsPage() {
                 <button
                   onClick={connectPosthog}
                   disabled={!apiKey.trim() || saving}
-                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {saving ? "Verifying…" : "Connect"}
                 </button>

@@ -47,9 +47,9 @@ const TYPE_ICON: Record<string, typeof IconSearch> = {
 };
 
 const SEVERITY_STYLE = {
-  high: "bg-red-500/15 text-red-400",
-  medium: "bg-amber-500/15 text-amber-400",
-  low: "bg-zinc-700/40 text-zinc-400",
+  high: "bg-red-500/10 text-red-400",
+  medium: "bg-amber-500/10 text-amber-400",
+  low: "bg-surface-4 text-ink-subtle",
 } as const;
 
 function liveUrl(site: string, path: string): string {
@@ -128,8 +128,8 @@ export default function RecommendationDetailPage() {
     return (
       <div className="space-y-4">
         <BackLink />
-        <section className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/40 px-6 py-12 text-center">
-          <p className="text-sm text-zinc-400">This finding no longer exists — data was re-synced or the issue was fixed.</p>
+        <section className="rounded-xl border border-dashed border-hairline bg-surface-1/40 px-6 py-12 text-center">
+          <p className="text-sm text-ink-subtle">This finding no longer exists — data was re-synced or the issue was fixed.</p>
         </section>
       </div>
     );
@@ -141,46 +141,46 @@ export default function RecommendationDetailPage() {
       <BackLink />
 
       <header className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-800/80">
-          <Icon size={19} stroke={1.75} className="text-zinc-300" />
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-3">
+          <Icon size={19} stroke={1.75} className="text-ink-muted" />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-lg font-semibold leading-snug tracking-tight">{rec.title}</h1>
+            <h1 className="text-lg font-semibold leading-snug tracking-tight text-ink">{rec.title}</h1>
             <span
-              className={`shrink-0 rounded-md px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wide ${SEVERITY_STYLE[rec.severity]}`}
+              className={`shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-medium uppercase tracking-wide ${SEVERITY_STYLE[rec.severity]}`}
             >
               {rec.severity}
             </span>
           </div>
-          <p className="mt-1 text-xs capitalize text-zinc-600">
+          <p className="mt-1 text-xs capitalize text-ink-tertiary">
             {rec.type} · detected by deterministic rule over your crawled data
           </p>
         </div>
       </header>
 
-      <section className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-        <h2 className="text-[0.6875rem] font-semibold uppercase tracking-wider text-zinc-500">What we found</h2>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-300">{rec.detail}</p>
+      <section className="rounded-xl border border-hairline bg-surface-1 p-5">
+        <h2 className="text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-tertiary">What we found</h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-muted">{rec.detail}</p>
 
         {rec.paths && rec.paths.length > 0 ? (
           <div className="mt-4">
-            <p className="text-xs font-medium text-zinc-500">
+            <p className="text-xs font-medium text-ink-subtle">
               Affects {rec.count} pages — likely one shared template. Worst visibility first:
             </p>
-            <ul className="mt-2 divide-y divide-zinc-800/60 overflow-hidden rounded-lg border border-zinc-800/70">
+            <ul className="mt-2 divide-y divide-hairline-tertiary overflow-hidden rounded-lg border border-hairline">
               {rec.paths.slice(0, 8).map((p) => (
                 <li key={p.path}>
                   <a
                     href={liveUrl(site!, p.path)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between gap-3 px-3 py-2 transition hover:bg-zinc-800/40"
+                    className="flex items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-surface-2/60"
                   >
-                    <span className="truncate text-xs text-zinc-400" title={p.path}>
+                    <span className="truncate text-xs text-ink-subtle" title={p.path}>
                       {p.path}
                     </span>
-                    <span className="flex shrink-0 items-center gap-2 text-[0.6875rem] text-zinc-600">
+                    <span className="flex shrink-0 items-center gap-2 text-[0.6875rem] text-ink-tertiary">
                       impact {Math.round(p.impressions)}
                       <IconExternalLink size={12} stroke={1.75} />
                     </span>
@@ -189,20 +189,20 @@ export default function RecommendationDetailPage() {
               ))}
             </ul>
             {rec.count !== undefined && rec.count > 8 && (
-              <p className="mt-1.5 text-[0.6875rem] text-zinc-600">+{rec.count - 8} more pages affected</p>
+              <p className="mt-1.5 text-[0.6875rem] text-ink-tertiary">+{rec.count - 8} more pages affected</p>
             )}
           </div>
         ) : (
           rec.path && (
-            <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-zinc-800/70 bg-zinc-950/50 px-3 py-2">
-              <span className="truncate text-xs text-zinc-400" title={rec.path}>
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface-2/50 px-3 py-2">
+              <span className="truncate text-xs text-ink-subtle" title={rec.path}>
                 {rec.path}
               </span>
               <a
                 href={liveUrl(site!, rec.path)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex shrink-0 items-center gap-1 text-[0.6875rem] font-medium text-emerald-400 hover:text-emerald-300"
+                className="flex shrink-0 items-center gap-1 text-[0.6875rem] font-medium text-primary-hover hover:text-ink"
               >
                 Open page <IconExternalLink size={12} stroke={1.75} />
               </a>
@@ -211,17 +211,17 @@ export default function RecommendationDetailPage() {
         )}
       </section>
 
-      <section className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+      <section className="rounded-xl border border-hairline bg-surface-1 p-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-zinc-500">
-            <IconSparkles size={13} stroke={1.75} className="text-emerald-400" />
+          <h2 className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-tertiary">
+            <IconSparkles size={13} stroke={1.75} className="text-primary-hover" />
             AI fix plan
           </h2>
           {!rec.ai ? (
             <button
               onClick={generatePlan}
               disabled={aiBusy}
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {aiBusy ? "Consulting skills library…" : "Generate fix plan"}
             </button>
@@ -229,14 +229,14 @@ export default function RecommendationDetailPage() {
             <button
               onClick={generatePlan}
               disabled={aiBusy}
-              className="flex items-center gap-1.5 rounded-lg bg-violet-500/15 px-3 py-1.5 text-xs font-medium text-violet-400 transition hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-1 px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:border-hairline-strong hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {aiBusy ? "Consulting skills library…" : "Add agent prompt"}
             </button>
           ) : null}
         </div>
 
-        {aiBusy && <p className="mt-3 animate-pulse text-xs text-emerald-400">Reading your skills library and page evidence…</p>}
+        {aiBusy && <p className="mt-3 animate-pulse text-xs text-primary-hover">Reading your skills library and page evidence…</p>}
         {aiError && (
           <div className="mt-3">
             <ErrorBanner message={aiError} />
@@ -246,17 +246,17 @@ export default function RecommendationDetailPage() {
         {rec.ai ? (
           <div className="mt-3 space-y-4">
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Why it matters</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">{rec.ai.why}</p>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-tertiary">Why it matters</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{rec.ai.why}</p>
             </div>
 
             {rec.ai.steps.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">How to fix it</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-tertiary">How to fix it</h3>
                 <ol className="mt-2 space-y-2.5">
                   {rec.ai.steps.map((s, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-zinc-300">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-[0.625rem] font-bold text-emerald-400">
+                    <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-muted">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[0.625rem] font-bold text-primary-hover">
                         {i + 1}
                       </span>
                       {s}
@@ -268,7 +268,7 @@ export default function RecommendationDetailPage() {
 
             {(rec.ai.draftTitle || rec.ai.draftMeta) && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Ready-to-use drafts</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-tertiary">Ready-to-use drafts</h3>
                 <div className="mt-2 space-y-2">
                   {rec.ai.draftTitle && <Draft label="Title tag" value={rec.ai.draftTitle} />}
                   {rec.ai.draftMeta && <Draft label="Meta description" value={rec.ai.draftMeta} />}
@@ -281,8 +281,8 @@ export default function RecommendationDetailPage() {
         ) : (
           !aiBusy &&
           !aiError && (
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-              Quick rule suggestion: <span className="text-zinc-200">{rec.action}</span>
+            <p className="mt-3 text-sm leading-relaxed text-ink-subtle">
+              Quick rule suggestion: <span className="text-ink">{rec.action}</span>
             </p>
           )
         )}
@@ -294,9 +294,9 @@ export default function RecommendationDetailPage() {
 function Draft({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="rounded-lg border border-emerald-900/40 bg-emerald-950/20 p-3">
+    <div className="rounded-lg border border-hairline bg-surface-2/60 p-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[0.6875rem] font-semibold uppercase tracking-wide text-emerald-500/80">{label}</span>
+        <span className="text-[0.6875rem] font-semibold uppercase tracking-wide text-ink-subtle">{label}</span>
         <button
           onClick={() => {
             void navigator.clipboard.writeText(value).then(() => {
@@ -304,12 +304,12 @@ function Draft({ label, value }: { label: string; value: string }) {
               setTimeout(() => setCopied(false), 1500);
             });
           }}
-          className="text-[0.6875rem] font-medium text-zinc-500 transition hover:text-zinc-300"
+          className="text-[0.6875rem] font-medium text-ink-tertiary transition-colors hover:text-ink-muted"
         >
           {copied ? "Copied ✓" : "Copy"}
         </button>
       </div>
-      <p className="mt-1.5 text-sm leading-relaxed text-zinc-100">{value}</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-ink">{value}</p>
     </div>
   );
 }
@@ -317,9 +317,9 @@ function Draft({ label, value }: { label: string; value: string }) {
 function AgentPrompt({ prompt }: { prompt: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="rounded-lg border border-violet-900/40 bg-violet-950/20 p-3">
+    <div className="rounded-lg border border-primary/25 bg-primary/[0.06] p-3">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-[0.6875rem] font-semibold uppercase tracking-wide text-violet-400/90">
+        <h3 className="text-[0.6875rem] font-semibold uppercase tracking-wide text-primary-hover">
           Agent prompt — paste into your AI coding agent
         </h3>
         <button
@@ -329,15 +329,15 @@ function AgentPrompt({ prompt }: { prompt: string }) {
               setTimeout(() => setCopied(false), 1500);
             });
           }}
-          className="shrink-0 text-[0.6875rem] font-medium text-zinc-500 transition hover:text-zinc-300"
+          className="shrink-0 text-[0.6875rem] font-medium text-ink-tertiary transition-colors hover:text-ink-muted"
         >
           {copied ? "Copied ✓" : "Copy prompt"}
         </button>
       </div>
-      <p className="mt-1 text-[0.6875rem] leading-relaxed text-zinc-600">
+      <p className="mt-1 text-[0.6875rem] leading-relaxed text-ink-tertiary">
         Works with Cursor, Claude Code, Copilot Workspace — open your repo, paste, run.
       </p>
-      <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-zinc-800 bg-zinc-950/80 p-3 font-mono text-xs leading-relaxed text-zinc-200">
+      <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-hairline bg-canvas p-3 font-mono text-xs leading-relaxed text-ink-muted">
         {prompt}
       </pre>
     </div>
@@ -346,7 +346,7 @@ function AgentPrompt({ prompt }: { prompt: string }) {
 
 function BackLink() {
   return (
-    <Link href="/dashboard/recommendations" className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500 transition hover:text-zinc-300">
+    <Link href="/dashboard/recommendations" className="inline-flex items-center gap-1 text-xs font-medium text-ink-tertiary transition-colors hover:text-ink-muted">
       <IconArrowLeft size={14} stroke={1.75} />
       All findings
     </Link>

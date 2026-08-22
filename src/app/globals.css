@@ -5,9 +5,28 @@
     "Segoe UI", Roboto, sans-serif;
 }
 
+@theme {
+  --color-canvas: #010102;
+  --color-surface-1: #0c0d10;
+  --color-surface-2: #14161a;
+  --color-surface-3: #1b1d22;
+  --color-surface-4: #23252b;
+  --color-hairline: #23252a;
+  --color-hairline-strong: #2f3238;
+  --color-hairline-tertiary: #1f2126;
+  --color-ink: #f7f8f8;
+  --color-ink-muted: #d0d6e0;
+  --color-ink-subtle: #8a8f98;
+  --color-ink-tertiary: #62666d;
+  --color-primary: #5e6ad2;
+  --color-primary-hover: #828fff;
+  --color-primary-focus: #5e69d1;
+  --color-success: #27a644;
+}
+
 :root {
-  --background: #09090b;
-  --foreground: #f4f4f5;
+  --background: #010102;
+  --foreground: #f7f8f8;
   color-scheme: dark;
 }
 
@@ -46,12 +65,12 @@ p {
 }
 
 ::selection {
-  background: rgba(52, 211, 153, 0.25);
-  color: #ecfdf5;
+  background: rgba(94, 106, 210, 0.35);
+  color: #f7f8f8;
 }
 
 :focus-visible {
-  outline: 2px solid #34d399;
+  outline: 2px solid rgba(94, 105, 209, 0.5);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -66,11 +85,11 @@ p {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: #23252b;
   border-radius: 8px;
   border: 2px solid var(--background);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: #2f3238;
 }
