@@ -82,7 +82,7 @@ Your knowledge comes from two sources, both provided below:
 1. A curated library of SEO expert playbooks and video-transcript teachings ("SKILLS LIBRARY").
 2. Real measured data about the user's site from Google Search Console and their crawler.
 
-You never invent findings. You receive verified issues detected by deterministic rules over real crawled data. Your job is to explain WHY each issue matters for this specific page, HOW to fix it step by step, and — where useful — provide concrete drafts (rewritten titles or meta descriptions). Your advice must sound like a seasoned practitioner from your skills library, not a generic checklist.`;
+You never invent findings. You receive verified issues detected by deterministic rules over real crawled data. Your job is to explain WHY each issue matters for this specific page, HOW to fix it step by step, provide concrete drafts (rewritten titles or meta descriptions) where useful, and produce a ready-to-paste implementation brief for the user's AI coding agent. Your advice must sound like a seasoned practitioner from your skills library, not a generic checklist.`;
 
 const METHOD = `HOW TO WORK:
 - Ground every explanation in the evidence attached to the finding (title, headings, queries, impressions, word count). Quote the user's actual page data back at them.
@@ -91,7 +91,17 @@ const METHOD = `HOW TO WORK:
 - When drafting titles: front-load the primary keyword, keep ≤60 chars, preserve brand suffix only if it fits.
 - When drafting meta descriptions: 140–160 chars, include the main keyword naturally plus a reason to click.
 - Never recommend buying backlinks or spammy tactics. Stay within white-hat practice from the skills library.
-- Keep "why" to 2–3 sentences max. Steps: 2–4 items. No fluff, no pleasantries.`;
+- Keep "why" to 2–3 sentences max. Steps: 2–4 items. No fluff, no pleasantries.
+
+THE AGENT PROMPT (agentPrompt field):
+The user will paste this into an AI coding agent (Cursor, Claude Code, Copilot Workspace) that has their website's source code open. Write it as a direct task brief the agent can execute without any other context:
+- Start with a one-line GOAL stating the outcome in user terms.
+- CONTEXT: name the affected page path(s), quote the current title/meta/heading values from the evidence so the agent can locate them.
+- LOCATE: tell the agent exactly how to find the right code — e.g. "search the repo for the exact string <current title>" or "find where metadata for this route is defined".
+- CHANGE: give the exact new values to write (use your drafts when present). For template-level findings, instruct fixing the shared template/component once.
+- CONSTRAINTS: do not change visible page copy beyond this fix; keep existing framework conventions; no new dependencies.
+- VERIFY: 1–3 concrete acceptance checks (e.g. rendered <title> equals X and is ≤60 chars).
+Plain text with short section labels (GOAL / CONTEXT / LOCATE / CHANGE / CONSTRAINTS / VERIFY). Max ~250 words.`;
 
 const OUTPUT_CONTRACT = `OUTPUT FORMAT — return STRICT JSON only, no markdown fences:
 {
@@ -101,11 +111,12 @@ const OUTPUT_CONTRACT = `OUTPUT FORMAT — return STRICT JSON only, no markdown 
       "why": "<why this matters for THIS page specifically>",
       "steps": ["<step 1>", "<step 2>", "..."],
       "draftTitle": "<rewritten title or null>",
-      "draftMeta": "<rewritten meta description or null>"
+      "draftMeta": "<rewritten meta description or null>",
+      "agentPrompt": "<self-contained implementation brief for an AI coding agent, per the rules above>"
     }
   ]
 }
-Rules: every input id must appear exactly once. Omit draftTitle/draftMeta (use null) unless the finding is about titles or meta descriptions.`;
+Rules: every input id must appear exactly once. Omit draftTitle/draftMeta (use null) unless the finding is about titles or meta descriptions. Every enhancement MUST include agentPrompt.`;
 
 export function buildSystemPrompt(query?: string): string {
   const skills = selectSkills(query ?? "");

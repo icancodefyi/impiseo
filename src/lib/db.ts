@@ -56,6 +56,7 @@ export type RecEnhancementDoc = {
   steps: string[];
   draftTitle?: string | null;
   draftMeta?: string | null;
+  agentPrompt?: string;
   updatedAt: Date;
 };
 

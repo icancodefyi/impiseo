@@ -15,6 +15,7 @@ type Enhancement = {
   steps: string[];
   draftTitle?: string | null;
   draftMeta?: string | null;
+  agentPrompt?: string | null;
 };
 
 type Evidence = Record<string, unknown>;
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
       const evidence = buildEvidence(rec, contentsByPath, queriesByPath);
       const fingerprint = createHash("sha1").update(JSON.stringify(evidence)).digest("hex");
       const hit = cacheMap.get(rec.id);
-      if (hit && hit.fingerprint === fingerprint) {
+      if (hit && hit.fingerprint === fingerprint && hit.agentPrompt) {
         alreadyCached++;
         continue;
       }
@@ -141,6 +142,7 @@ export async function POST(req: NextRequest) {
               steps: e.steps.slice(0, 4).map((s) => String(s).slice(0, 400)),
               draftTitle: e.draftTitle ?? null,
               draftMeta: e.draftMeta ?? null,
+              agentPrompt: e.agentPrompt ? String(e.agentPrompt).slice(0, 4000) : "",
               updatedAt: now,
             },
           },

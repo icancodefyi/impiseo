@@ -21,6 +21,7 @@ type AiEnhancement = {
   steps: string[];
   draftTitle: string | null;
   draftMeta: string | null;
+  agentPrompt: string | null;
 };
 
 type Rec = {
@@ -216,7 +217,7 @@ export default function RecommendationDetailPage() {
             <IconSparkles size={13} stroke={1.75} className="text-emerald-400" />
             AI fix plan
           </h2>
-          {!rec.ai && (
+          {!rec.ai ? (
             <button
               onClick={generatePlan}
               disabled={aiBusy}
@@ -224,7 +225,15 @@ export default function RecommendationDetailPage() {
             >
               {aiBusy ? "Consulting skills library…" : "Generate fix plan"}
             </button>
-          )}
+          ) : !rec.ai.agentPrompt ? (
+            <button
+              onClick={generatePlan}
+              disabled={aiBusy}
+              className="flex items-center gap-1.5 rounded-lg bg-violet-500/15 px-3 py-1.5 text-xs font-medium text-violet-400 transition hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {aiBusy ? "Consulting skills library…" : "Add agent prompt"}
+            </button>
+          ) : null}
         </div>
 
         {aiBusy && <p className="mt-3 animate-pulse text-xs text-emerald-400">Reading your skills library and page evidence…</p>}
@@ -266,6 +275,8 @@ export default function RecommendationDetailPage() {
                 </div>
               </div>
             )}
+
+            {rec.ai.agentPrompt && <AgentPrompt prompt={rec.ai.agentPrompt} />}
           </div>
         ) : (
           !aiBusy &&
@@ -299,6 +310,36 @@ function Draft({ label, value }: { label: string; value: string }) {
         </button>
       </div>
       <p className="mt-1.5 text-sm leading-relaxed text-zinc-100">{value}</p>
+    </div>
+  );
+}
+
+function AgentPrompt({ prompt }: { prompt: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="rounded-lg border border-violet-900/40 bg-violet-950/20 p-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-[0.6875rem] font-semibold uppercase tracking-wide text-violet-400/90">
+          Agent prompt — paste into your AI coding agent
+        </h3>
+        <button
+          onClick={() => {
+            void navigator.clipboard.writeText(prompt).then(() => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            });
+          }}
+          className="shrink-0 text-[0.6875rem] font-medium text-zinc-500 transition hover:text-zinc-300"
+        >
+          {copied ? "Copied ✓" : "Copy prompt"}
+        </button>
+      </div>
+      <p className="mt-1 text-[0.6875rem] leading-relaxed text-zinc-600">
+        Works with Cursor, Claude Code, Copilot Workspace — open your repo, paste, run.
+      </p>
+      <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-zinc-800 bg-zinc-950/80 p-3 font-mono text-xs leading-relaxed text-zinc-200">
+        {prompt}
+      </pre>
     </div>
   );
 }

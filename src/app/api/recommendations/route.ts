@@ -42,7 +42,13 @@ export async function GET(req: NextRequest) {
     const aiByRecId = new Map(
       cached.map((c) => [
         c.recId,
-        { why: c.why, steps: c.steps, draftTitle: c.draftTitle ?? null, draftMeta: c.draftMeta ?? null },
+        {
+          why: c.why,
+          steps: c.steps,
+          draftTitle: c.draftTitle ?? null,
+          draftMeta: c.draftMeta ?? null,
+          agentPrompt: c.agentPrompt ?? null,
+        },
       ])
     );
 
