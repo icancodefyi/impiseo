@@ -130,7 +130,7 @@ export default function RecommendationsPage() {
               return (
                 <Link
                   key={r.id}
-                  href={`/recommendations/${encodeRecId(r.id)}?site=${encodeURIComponent(site!)}`}
+                  href={`/dashboard/recommendations/${encodeRecId(r.id)}?site=${encodeURIComponent(site!)}`}
                   className="flex items-center gap-3 px-4 py-3.5 transition hover:bg-zinc-800/40"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800/80">
