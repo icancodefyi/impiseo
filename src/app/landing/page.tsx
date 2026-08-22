@@ -1,5 +1,7 @@
 import { TopNav } from "@/components/landing/nav";
 import { Hero } from "@/components/landing/hero";
+import { DataJoin } from "@/components/landing/data-join";
+import { Features } from "@/components/landing/features";
 
 export const metadata = {
   title: "Impiseo — Fix the SEO issues that actually move traffic",
@@ -13,6 +15,8 @@ export default function LandingPage() {
       <TopNav />
       <main>
         <Hero />
+        <DataJoin />
+        <Features />
       </main>
     </div>
   );
