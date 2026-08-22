@@ -7,7 +7,8 @@ export type Skill = {
 };
 
 const MAX_CHARS_PER_SKILL = 24_000;
-const MAX_CHARS_TOTAL = 150_000;
+const MAX_CHARS_ALL_SKILLS = 150_000;
+const PROMPT_BUDGET_CHARS = 19_000;
 
 let skillsCache: Skill[] | null = null;
 
@@ -30,13 +31,49 @@ export function loadSkills(): Skill[] {
   for (const file of files) {
     const raw = fs.readFileSync(path.join(dir, file), "utf8").trim();
     const content = raw.length > MAX_CHARS_PER_SKILL ? `${raw.slice(0, MAX_CHARS_PER_SKILL)}…` : raw;
-    if (total + content.length > MAX_CHARS_TOTAL) break;
+    if (total + content.length > MAX_CHARS_ALL_SKILLS) break;
     total += content.length;
     skills.push({ name: path.basename(file, ".md"), content });
   }
 
   skillsCache = skills;
-  return skills;
+  return skillsCache;
+}
+
+function topicWords(query: string): string[] {
+  return [...new Set((query.toLowerCase().match(/[a-z]{4,}/g) ?? []))];
+}
+
+function relevanceScore(skill: Skill, words: string[]): number {
+  if (words.length === 0) return 0;
+  const haystack = skill.content.toLowerCase();
+  let score = 0;
+  for (const w of words) {
+    const hits = haystack.split(w).length - 1;
+    if (hits > 0) score += Math.min(hits, 20);
+  }
+  return score;
+}
+
+export function selectSkills(query: string): Skill[] {
+  const all = loadSkills();
+  if (all.length === 0) return [];
+
+  const words = topicWords(query);
+  const ranked = all
+    .map((skill) => ({ skill, score: relevanceScore(skill, words) }))
+    .sort((a, b) => b.score - a.score || a.skill.name.localeCompare(b.skill.name));
+
+  const selected: Skill[] = [];
+  let used = 0;
+  for (const { skill } of ranked) {
+    const remaining = PROMPT_BUDGET_CHARS - used;
+    if (remaining < 2_000) break;
+    const content = skill.content.length > remaining ? `${skill.content.slice(0, remaining)}…` : skill.content;
+    selected.push({ name: skill.name, content });
+    used += content.length;
+  }
+  return selected;
 }
 
 const ROLE = `You are the Impiseo SEO Copilot — an expert technical SEO consultant embedded in a search-analytics product.
@@ -70,8 +107,8 @@ const OUTPUT_CONTRACT = `OUTPUT FORMAT — return STRICT JSON only, no markdown 
 }
 Rules: every input id must appear exactly once. Omit draftTitle/draftMeta (use null) unless the finding is about titles or meta descriptions.`;
 
-export function buildSystemPrompt(): string {
-  const skills = loadSkills();
+export function buildSystemPrompt(query?: string): string {
+  const skills = selectSkills(query ?? "");
   const library = skills.length
     ? skills.map((s) => `<skill source="${s.name}">\n${s.content}\n</skill>`).join("\n\n")
     : "No skill files found — rely on standard professional SEO expertise.";

@@ -7,7 +7,7 @@ import { getCollections } from "@/lib/db";
 import { loadRuleInputs } from "@/lib/recs-engine";
 import { generateRecommendations, type Rec } from "@/lib/rules";
 
-const BATCH_SIZE = 8;
+const BATCH_SIZE = 5;
 
 type Enhancement = {
   id: string;
@@ -47,7 +47,7 @@ function buildEvidence(rec: Rec, contents: Map<string, import("@/lib/db").PageCo
       title: c.title,
       currentMeta: c.metaDescription,
       wordCount: c.wordCount,
-      headings: c.headings.filter((h) => h.level <= 2).slice(0, 12).map((h) => `${"##".repeat(h.level - 1)} ${h.text}`),
+      headings: c.headings.filter((h) => h.level <= 2).slice(0, 8).map((h) => `${"##".repeat(h.level - 1)} ${h.text}`),
       searchQueries: (queriesByPath.get(c.path) ?? []).slice(0, 5),
     },
   };
@@ -107,13 +107,13 @@ export async function POST(req: NextRequest) {
     const batch = pending.slice(0, BATCH_SIZE);
 
     if (batch.length > 0) {
-      const userPayload = JSON.stringify(
-        { findings: batch.map((b) => b.evidence) },
-        null,
-        1
-      );
+      const topics = batch
+        .map((b) => `${b.rec.title} ${b.rec.detail} ${b.rec.action}`)
+        .join(" ");
+      const system = buildSystemPrompt(topics);
+      const userPayload = JSON.stringify({ findings: batch.map((b) => b.evidence) }, null, 1);
 
-      const result = await chatJSON<{ enhancements?: Enhancement[] }>(buildSystemPrompt(), userPayload);
+      const result = await chatJSON<{ enhancements?: Enhancement[] }>(system, userPayload);
       const valid = new Map<string, Enhancement>(
         (result.enhancements ?? [])
           .filter((e) => e.id && typeof e.why === "string" && Array.isArray(e.steps))
