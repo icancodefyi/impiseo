@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { IconPlugConnected } from "@tabler/icons-react";
+import { IconPlugConnected, IconSpider } from "@tabler/icons-react";
 import { useDashboard } from "@/lib/dashboard-context";
 import { ErrorBanner, Loader, PageHeader, nf, posColor } from "@/components/widgets";
 
@@ -9,10 +10,39 @@ function fmtPos(v: number) {
   return v ? v.toFixed(1) : "–";
 }
 
-export default function PagesPage() {
-  const { joined, stats, loading, error, days } = useDashboard();
+export default function SitePagesPage() {
+  const { joined, stats, loading, error, days, site, loggedIn } = useDashboard();
   const rows = joined?.connected ? joined.rows : [];
+  const [crawlState, setCrawlState] = useState<"idle" | "running" | "done" | "error">("idle");
+  const [progress, setProgress] = useState("");
 
+  async function runSyncAndCrawl() {
+    if (!site) return;
+    setCrawlState("running");
+    try {
+      setProgress("Syncing pages from Search Console…");
+      const syncRes = await fetch(`/api/pages/sync?site=${encodeURIComponent(site)}`, { method: "POST" });
+      if (!syncRes.ok) throw new Error((await syncRes.json()).error ?? "sync failed");
+      const { synced, total }: { synced: number; total: number } = await syncRes.json();
+
+      let done = total - synced;
+      for (let i = 0; i < 60; i++) {
+        setProgress(`Crawling… ${Math.min(done, total)}/${total} pages analyzed`);
+        const res = await fetch(`/api/crawl?site=${encodeURIComponent(site)}&batch=5`, { method: "POST" });
+        if (!res.ok) throw new Error((await res.json()).error ?? "crawl failed");
+        const data: { remaining: number } = await res.json();
+        done = total - data.remaining;
+        if (data.remaining === 0) break;
+      }
+      setProgress(`${total} pages synced & analyzed`);
+      setCrawlState("done");
+    } catch {
+      setProgress("Something went wrong while crawling.");
+      setCrawlState("error");
+    }
+  }
+
+  if (!loggedIn) return null;
   if (!stats && loading) return <Loader label="Fetching Search Console data…" />;
 
   return (
@@ -23,6 +53,18 @@ export default function PagesPage() {
       />
 
       {error && <ErrorBanner message={error} />}
+
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-3.5">
+        <button
+          onClick={runSyncAndCrawl}
+          disabled={crawlState === "running"}
+          className="inline-flex items-center gap-2 rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <IconSpider size={15} stroke={1.75} />
+          {crawlState === "running" ? "Working…" : "Sync & analyze page content"}
+        </button>
+        {progress && <p className="text-xs text-zinc-400">{progress}</p>}
+      </div>
 
       <section className="rounded-xl border border-zinc-800 bg-zinc-900 shadow-sm">
         {!joined && (
