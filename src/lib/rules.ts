@@ -26,7 +26,7 @@ export type PageQueryRow = {
   position: number;
 };
 
-type RuleInputs = {
+export type RuleInputs = {
   contents: EnrichedContent[];
   phViewsByPath: Map<string, number>;
   posthogConnected: boolean;

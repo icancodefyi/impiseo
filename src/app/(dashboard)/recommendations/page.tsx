@@ -7,10 +7,18 @@ import {
   IconChartBar,
   IconFileText,
   IconSearch,
+  IconSparkles,
   IconSpider,
 } from "@tabler/icons-react";
 import { useDashboard } from "@/lib/dashboard-context";
 import { ErrorBanner, Loader, SiteControls } from "@/components/widgets";
+
+type AiEnhancement = {
+  why: string;
+  steps: string[];
+  draftTitle: string | null;
+  draftMeta: string | null;
+};
 
 type Rec = {
   id: string;
@@ -22,6 +30,7 @@ type Rec = {
   action: string;
   count?: number;
   paths?: { path: string; impressions: number }[];
+  ai?: AiEnhancement | null;
 };
 
 const TYPE_ICON: Record<string, typeof IconSearch> = {
@@ -51,29 +60,53 @@ export default function RecommendationsPage() {
   const [data, setData] = useState<ReadyState | null>(null);
   const [loadedSite, setLoadedSite] = useState("");
   const [error, setError] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiMessage, setAiMessage] = useState("");
 
-  useEffect(() => {
+  async function load() {
     if (!site) return;
-    let cancelled = false;
     fetch(`/api/recommendations?site=${encodeURIComponent(site)}`)
       .then(async (res) => {
         if (!res.ok) throw new Error((await res.json()).error ?? `HTTP ${res.status}`);
         return res.json();
       })
       .then((d) => {
-        if (!cancelled) {
-          setError("");
-          setData({ ready: d.ready, reason: d.reason, recs: d.recommendations ?? [], pagesCrawled: d.stats?.pagesCrawled });
-          setLoadedSite(site);
-        }
+        setError("");
+        setData({ ready: d.ready, reason: d.reason, recs: d.recommendations ?? [], pagesCrawled: d.stats?.pagesCrawled });
+        setLoadedSite(site);
       })
-      .catch((e) => {
-        if (!cancelled) setError(e.message);
-      });
+      .catch((e) => setError(e.message));
+  }
+
+  useEffect(() => {
+    if (!site) return;
+    let cancelled = false;
+    if (!cancelled) void load().catch(() => {});
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [site]);
+
+  async function runEnhance() {
+    if (!site || aiBusy) return;
+    setAiBusy(true);
+    setAiMessage("Consulting the SEO skills library…");
+    try {
+      const res = await fetch(`/api/recommendations/enhance?site=${encodeURIComponent(site)}`, { method: "POST" });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`);
+      const parts = [`${body.enhanced} findings enhanced`];
+      if (body.alreadyCached > 0) parts.push(`${body.alreadyCached} already cached`);
+      if (body.pending > 0) parts.push(`${body.pending} still pending — click again`);
+      setAiMessage(parts.join(" · "));
+      await load();
+    } catch (e) {
+      setAiMessage(`AI failed: ${e instanceof Error ? e.message : "unknown error"}`);
+    } finally {
+      setAiBusy(false);
+    }
+  }
 
   const loading = !site || site !== loadedSite || (!data && !error);
 
@@ -81,7 +114,7 @@ export default function RecommendationsPage() {
   if (error)
     return (
       <div className="space-y-4">
-        <PageHeader />
+        <PageHeader onEnhance={runEnhance} aiBusy={aiBusy} ready={false} />
         <ErrorBanner message={error} />
       </div>
     );
@@ -89,7 +122,10 @@ export default function RecommendationsPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader />
+      <PageHeader onEnhance={runEnhance} aiBusy={aiBusy} ready={data.ready && data.recs.length > 0} />
+      {(aiBusy || aiMessage) && (
+        <p className={`px-1 text-xs ${aiBusy ? "animate-pulse text-emerald-400" : "text-zinc-500"}`}>{aiMessage}</p>
+      )}
 
       {!data.ready ? (
         <section className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/40 px-6 py-12 text-center">
@@ -131,7 +167,41 @@ export default function RecommendationsPage() {
                     </span>
                   </div>
                   <p className="mt-2 text-xs leading-relaxed text-zinc-400">{r.detail}</p>
-                  <p className="mt-2 text-xs leading-relaxed text-emerald-400/90">→ {r.action}</p>
+                  {!r.ai && <p className="mt-2 text-xs leading-relaxed text-emerald-400/90">→ {r.action}</p>}
+                  {r.ai && (
+                    <div className="mt-2.5 space-y-2 rounded-lg border border-emerald-900/40 bg-emerald-950/20 p-3">
+                      <p className="flex items-start gap-1.5 text-xs leading-relaxed text-emerald-300">
+                        <IconSparkles size={13} stroke={1.75} className="mt-0.5 shrink-0" />
+                        {r.ai.why}
+                      </p>
+                      {r.ai.steps.length > 0 && (
+                        <ol className="space-y-1.5">
+                          {r.ai.steps.map((s, i) => (
+                            <li key={i} className="flex items-start gap-1.5 text-xs leading-relaxed text-zinc-300">
+                              <span className="mt-px shrink-0 font-semibold text-zinc-500">{i + 1}.</span>
+                              {s}
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                      {(r.ai.draftTitle || r.ai.draftMeta) && (
+                        <div className="space-y-1.5 border-t border-emerald-900/30 pt-2">
+                          {r.ai.draftTitle && (
+                            <p className="text-xs text-zinc-400">
+                              <span className="font-medium text-zinc-500">Draft title:</span>{" "}
+                              <span className="text-zinc-200">{r.ai.draftTitle}</span>
+                            </p>
+                          )}
+                          {r.ai.draftMeta && (
+                            <p className="text-xs text-zinc-400">
+                              <span className="font-medium text-zinc-500">Draft meta:</span>{" "}
+                              <span className="text-zinc-200">{r.ai.draftMeta}</span>
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {r.paths && r.paths.length > 0 && (
                     <div className="mt-2.5 space-y-1 border-t border-zinc-800/60 pt-2.5">
                       {r.paths.slice(0, 5).map((p) => (
@@ -159,14 +229,26 @@ export default function RecommendationsPage() {
   );
 }
 
-function PageHeader() {
+function PageHeader({ onEnhance, aiBusy, ready }: { onEnhance: () => void; aiBusy: boolean; ready: boolean }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 className="text-lg font-semibold tracking-tight">Recommendations</h1>
         <p className="mt-0.5 text-xs text-zinc-500">Deterministic fixes ranked by traffic impact</p>
       </div>
-      <SiteControls />
+      <div className="flex items-center gap-3">
+        <SiteControls />
+        {ready && (
+          <button
+            onClick={onEnhance}
+            disabled={aiBusy}
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-2 text-sm font-medium text-emerald-400 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <IconSparkles size={15} stroke={1.75} />
+            {aiBusy ? "Thinking…" : "Generate AI fix plans"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
