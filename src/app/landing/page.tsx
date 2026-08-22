@@ -2,6 +2,9 @@ import { TopNav } from "@/components/landing/nav";
 import { Hero } from "@/components/landing/hero";
 import { DataJoin } from "@/components/landing/data-join";
 import { Features } from "@/components/landing/features";
+import { HowItWorks } from "@/components/landing/how-it-works";
+import { CtaBanner } from "@/components/landing/cta-banner";
+import { Footer } from "@/components/landing/footer";
 
 export const metadata = {
   title: "Impiseo — Fix the SEO issues that actually move traffic",
@@ -17,7 +20,10 @@ export default function LandingPage() {
         <Hero />
         <DataJoin />
         <Features />
+        <HowItWorks />
+        <CtaBanner />
       </main>
+      <Footer />
     </div>
   );
 }
