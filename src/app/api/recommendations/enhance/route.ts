@@ -71,10 +71,18 @@ export async function POST(req: NextRequest) {
   if (!site) {
     return NextResponse.json({ error: "missing site param" }, { status: 400 });
   }
+  const targetId = req.nextUrl.searchParams.get("id");
 
   try {
     const { inputs } = await loadRuleInputs(userId, site, accessToken);
-    const recommendations = generateRecommendations(inputs);
+    let recommendations = generateRecommendations(inputs);
+
+    if (targetId) {
+      recommendations = recommendations.filter((r) => r.id === targetId);
+      if (recommendations.length === 0) {
+        return NextResponse.json({ error: "finding not found for this site" }, { status: 404 });
+      }
+    }
 
     const { rec_enhancements } = await getCollections();
     const cached = await rec_enhancements
@@ -104,7 +112,7 @@ export async function POST(req: NextRequest) {
       pending.push({ rec, evidence, fingerprint });
     }
 
-    const batch = pending.slice(0, BATCH_SIZE);
+    const batch = pending.slice(0, targetId ? 1 : BATCH_SIZE);
 
     if (batch.length > 0) {
       const topics = batch
