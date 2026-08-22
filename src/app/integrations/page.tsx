@@ -123,7 +123,7 @@ export default function IntegrationsPage() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-center">
           <p className="text-sm text-zinc-400">Sign in to manage integrations.</p>
           <Link
-            href="/"
+            href="/dashboard"
             className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900"
           >
             Go to dashboard
@@ -143,7 +143,7 @@ export default function IntegrationsPage() {
           </p>
         </div>
         <Link
-          href="/"
+          href="/dashboard"
           className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 transition hover:text-zinc-200"
         >
           ← Dashboard

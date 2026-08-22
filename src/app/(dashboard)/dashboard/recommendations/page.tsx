@@ -104,7 +104,7 @@ export default function RecommendationsPage() {
           <IconSpider size={28} className="mx-auto text-zinc-600" stroke={1.5} />
           <p className="mt-3 max-w-md mx-auto text-sm leading-relaxed text-zinc-400">{data.reason}</p>
           <Link
-            href="/site-pages"
+            href="/dashboard/site-pages"
             className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200"
           >
             Go to Pages →

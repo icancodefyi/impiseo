@@ -16,23 +16,23 @@ import { useDashboard } from "@/lib/dashboard-context";
 import { Loader, SignInCard } from "@/components/widgets";
 
 const NAV = [
-  { href: "/", label: "Overview", icon: IconLayoutDashboard },
-  { href: "/site-pages", label: "Pages", icon: IconFileText },
-  { href: "/queries", label: "Queries", icon: IconSearch },
+  { href: "/dashboard", label: "Overview", icon: IconLayoutDashboard },
+  { href: "/dashboard/site-pages", label: "Pages", icon: IconFileText },
+  { href: "/dashboard/queries", label: "Queries", icon: IconSearch },
 ];
 
 function Sidebar() {
   const pathname = usePathname();
   return (
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-zinc-800 bg-zinc-950 md:flex">
-      <Link href="/" className="flex items-center gap-2.5 px-5 py-5">
+      <Link href="/dashboard" className="flex items-center gap-2.5 px-5 py-5">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15">
           <IconTrendingUp size={17} className="text-emerald-400" />
         </span>
         <span className="text-[0.9375rem] font-semibold tracking-tight">Impiseo</span>
       </Link>
       <nav className="mt-2 flex flex-col gap-0.5 px-3">
-        {[...NAV, { href: "/recommendations", label: "Recommendations", icon: IconBulb }].map((item) => {
+        {[...NAV, { href: "/dashboard/recommendations", label: "Recommendations", icon: IconBulb }].map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
           return (
@@ -71,13 +71,13 @@ function MobileNav() {
   const pathname = usePathname();
   const items = [
     ...NAV,
-    { href: "/recommendations", label: "Recommendations", icon: IconBulb },
+    { href: "/dashboard/recommendations", label: "Recommendations", icon: IconBulb },
     { href: "/integrations", label: "Integrations", icon: IconPlug },
   ];
   return (
     <header className="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur md:hidden">
       <div className="flex items-center justify-between px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+        <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15">
             <IconTrendingUp size={15} className="text-emerald-400" />
           </span>

@@ -83,7 +83,7 @@ export function Hero() {
             Impiseo joins Search Console rankings with real user behavior and your actual page content — then hands you a ranked list of fixes and an AI copilot that writes them.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="inline-flex h-10 items-center rounded-lg bg-[#5e6ad2] px-3.5 text-sm font-medium text-white transition-colors hover:bg-[#828fff]"
+            <Link href="/dashboard" className="inline-flex h-10 items-center rounded-lg bg-[#5e6ad2] px-3.5 text-sm font-medium text-white transition-colors hover:bg-[#828fff]"
             >
               Start free
             </Link>

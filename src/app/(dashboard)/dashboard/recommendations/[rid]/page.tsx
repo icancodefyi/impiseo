@@ -305,7 +305,7 @@ function Draft({ label, value }: { label: string; value: string }) {
 
 function BackLink() {
   return (
-    <Link href="/recommendations" className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500 transition hover:text-zinc-300">
+    <Link href="/dashboard/recommendations" className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500 transition hover:text-zinc-300">
       <IconArrowLeft size={14} stroke={1.75} />
       All findings
     </Link>

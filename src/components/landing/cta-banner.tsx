@@ -16,17 +16,17 @@ export function CtaBanner() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/"
+              href="/dashboard"
               className="inline-flex h-10 items-center rounded-lg bg-[#5e6ad2] px-3.5 text-sm font-medium text-white transition-colors hover:bg-[#828fff]"
             >
               Get started free
             </Link>
-            <a
-              href="/landing#how-it-works"
+            <Link
+              href="/#how-it-works"
               className="inline-flex h-10 items-center rounded-lg border border-[#23252a] bg-[#010102] px-3.5 text-sm font-medium text-[#f7f8f8] transition-colors hover:border-[#2f3238]"
             >
               See how it works
-            </a>
+            </Link>
           </div>
         </div>
       </Container>
