@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# android widget app
+android/**/build/
+android/**/.gradle/
+android/local.properties

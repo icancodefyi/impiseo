@@ -1,8 +1,29 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { google } from "googleapis";
+import { getCollections } from "./db";
 
 export const GSC_SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
+
+async function persistRefreshToken(
+  userId: string,
+  email: string,
+  refreshToken: string
+) {
+  try {
+    const { users } = await getCollections();
+    await users.updateOne(
+      { userId },
+      {
+        $set: { googleRefreshToken: refreshToken, updatedAt: new Date() },
+        $setOnInsert: { createdAt: new Date() },
+      },
+      { upsert: true }
+    );
+  } catch {
+    // never break auth flow over persistence failures
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -26,7 +47,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.access_token = account.access_token ?? undefined;
         token.refresh_token = account.refresh_token ?? token.refresh_token;
         token.expires_at = account.expires_at;
+        if (account.refresh_token && token.sub) {
+          await persistRefreshToken(
+            token.sub,
+            token.email ?? "",
+            account.refresh_token
+          );
+          token._rt_persisted = true;
+        }
         return token;
+      }
+
+      if (!token._rt_persisted && token.refresh_token && token.sub) {
+        await persistRefreshToken(
+          token.sub,
+          token.email ?? "",
+          token.refresh_token
+        );
+        token._rt_persisted = true;
       }
 
       if (!token.expires_at || Date.now() < token.expires_at * 1000) {

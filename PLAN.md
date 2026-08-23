@@ -87,6 +87,13 @@ digests_sent      { siteUrl, sentAt, incidentIds, openTrackId }
 - Weekly Monday digest email (Resend + react-email): hero stat (leaks), open incidents,
   top 3 actions with receipts.
 - Acute email within hours of confident detection (drop on protected page, new leak).
+- Mobile: PWA manifest + service worker + **Web Push** for acute alerts (Android Chrome
+  works day one; iOS requires add-to-home-screen). Notification = the alert surface;
+  tap opens incident detail.
+- Home-screen widget without a native app: public JSON endpoint `/api/widget/[token]`
+  returning `{ site, status: "ok" | "incidents", openIncidents, atRiskUsd, lastDigest }`.
+  Android users wire it into KWGT/Tasker for a glanceable tile; iOS users via Scriptable.
+  Cheap marketing hook ("build your own widget"), no native dev.
 - Slack webhook per site — phase 2.
 - Each incident detail page = evidence table + fix plan + agent prompt
   (**reuse existing recommendations/[rid] components almost verbatim**).
@@ -102,7 +109,7 @@ Integrations · Settings. CTR projections removed from all surfaces.
 |---|---|---|
 | **0 — Validate** | this week | Reposition landing page; 10 DMs to PostHog-using content founders: "what did you last panic about re: SEO?" Gate: answers cluster on drops/leaks |
 | **1 — Core** | wk 1–2 | snapshots_daily pipeline (Vercel Cron + CRON_SECRET), baselines, 3 detectors, incidents storage, demo alert on our own site |
-| **2 — Deliver** | wk 3–4 | Resend integration, digest template, incident pages, protected-page auto-selection, onboard 5–10 design partners (free) |
+| **2 — Deliver** | wk 3–4 | Resend integration, digest template, incident pages, protected-page auto-selection, PWA + web push, `/api/widget/[token]`, onboard 5–10 design partners (free) |
 | **3 — Launch** | mo 2 | Stripe billing, Slack, mute/snooze, HN + PostHog community launch |
 | **4 — Widen** | mo 3+ | GA4 adapter, multi-property, agency tier |
 

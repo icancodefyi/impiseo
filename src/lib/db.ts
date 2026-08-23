@@ -113,6 +113,8 @@ export type UserDoc = {
   };
   properties: { url: string; permissionLevel: string; addedAt: Date }[];
   activeProperty: string;
+  googleRefreshToken?: string;
+  widgetToken?: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -142,6 +144,10 @@ export async function getCollections(): Promise<Collections> {
     page_content.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
     rec_enhancements.createIndex({ userId: 1, siteUrl: 1, recId: 1 }, { unique: true }),
     users.createIndex({ userId: 1 }, { unique: true }),
+    users.createIndex(
+      { widgetToken: 1 },
+      { unique: true, sparse: true, name: "widgetToken_unique" }
+    ),
     idea_runs.createIndex({ userId: 1, siteUrl: 1 }, { unique: true }),
   ]);
 

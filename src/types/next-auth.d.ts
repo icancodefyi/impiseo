@@ -14,5 +14,6 @@ declare module "@auth/core/jwt" {
     refresh_token?: string;
     expires_at?: number;
     error?: string;
+    _rt_persisted?: boolean;
   }
 }
