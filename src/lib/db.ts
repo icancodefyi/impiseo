@@ -60,6 +60,47 @@ export type RecEnhancementDoc = {
   updatedAt: Date;
 };
 
+export type IdeaDoc = {
+  id: string;
+  type: "gap" | "striking-distance" | "intent-mismatch" | "winner-expansion" | "new-topic";
+  topic: string;
+  tokens: string[];
+  queriesCount: number;
+  impressions90d: number;
+  clicks90d: number;
+  ctr: number;
+  weightedPosition: number;
+  projectedClicksPerMonth: { low: number; high: number };
+  confidence: "low" | "medium" | "high";
+  branded: boolean;
+  evidenceNote: string;
+  angle?: string;
+  outline?: string[];
+  evidence: {
+    topQueries: { query: string; impressions: number; clicks: number; position: number }[];
+    coveringPages: string[];
+    autocompletePhrasings: string[];
+    validated: boolean;
+  };
+};
+
+export type IdeaRunDoc = {
+  userId: string;
+  siteUrl: string;
+  generatedAt: Date;
+  stats: {
+    windowDays: number;
+    queriesAnalyzed: number;
+    brandedFiltered: number;
+    clustersFormed: number;
+    ideasReturned: number;
+    aiPackaged: boolean;
+    discoveryPhrasings?: number;
+    discoveryTopics?: number;
+  };
+  ideas: IdeaDoc[];
+};
+
 export type UserDoc = {
   userId: string;
   email: string;
@@ -81,6 +122,7 @@ type Collections = {
   page_content: import("mongodb").Collection<PageContentDoc>;
   rec_enhancements: import("mongodb").Collection<RecEnhancementDoc>;
   users: import("mongodb").Collection<UserDoc>;
+  idea_runs: import("mongodb").Collection<IdeaRunDoc>;
 };
 
 let collections: Collections | null = null;
@@ -94,13 +136,15 @@ export async function getCollections(): Promise<Collections> {
   const page_content = db.collection<PageContentDoc>("page_content");
   const rec_enhancements = db.collection<RecEnhancementDoc>("rec_enhancements");
   const users = db.collection<UserDoc>("users");
+  const idea_runs = db.collection<IdeaRunDoc>("idea_runs");
   await Promise.all([
     pages.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
     page_content.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
     rec_enhancements.createIndex({ userId: 1, siteUrl: 1, recId: 1 }, { unique: true }),
     users.createIndex({ userId: 1 }, { unique: true }),
+    idea_runs.createIndex({ userId: 1, siteUrl: 1 }, { unique: true }),
   ]);
 
-  collections = { pages, page_content, rec_enhancements, users };
+  collections = { pages, page_content, rec_enhancements, users, idea_runs };
   return collections;
 }
