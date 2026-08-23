@@ -80,7 +80,7 @@ function OptionCard({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+      className={`cursor-pointer rounded-lg border px-4 py-2.5 text-left text-[0.9375rem] transition-colors ${
         selected
           ? "border-primary/60 bg-primary/10 font-medium text-ink"
           : "border-hairline bg-surface-2/40 text-ink-subtle hover:border-hairline-strong hover:text-ink-muted"
@@ -181,7 +181,7 @@ export function OnboardingWizard() {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
         <div className="w-full max-w-sm rounded-xl border border-hairline bg-surface-1 p-8 text-center">
-          <h1 className="text-xl font-semibold tracking-tight text-ink">Sign in to continue</h1>
+          <h1 className="text-[1.25rem] font-semibold tracking-[-0.01em] text-ink">Sign in to continue</h1>
           <p className="mt-2 text-sm text-ink-subtle">
             We need your Google account to read your Search Console properties.
           </p>
@@ -207,10 +207,10 @@ export function OnboardingWizard() {
           <StepDots step={step} />
         </div>
 
-        <div className="mt-4 rounded-xl border border-hairline bg-surface-1 p-7">
+        <div className="mt-5 rounded-xl border border-hairline bg-surface-1 p-8">
           {step === 1 && (
             <>
-              <h1 className="text-lg font-semibold tracking-tight text-ink">What website are we improving?</h1>
+              <h1 className="page-title !mt-0">What website are we improving?</h1>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-subtle">
                 This is the site you want more organic traffic for.
               </p>
@@ -220,7 +220,7 @@ export function OnboardingWizard() {
                 onChange={(e) => setSiteInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && normalizedSite && setStep(2)}
                 placeholder="example.com"
-                className="mt-5 w-full rounded-lg border border-hairline bg-canvas px-3.5 py-2.5 text-sm text-ink outline-none placeholder:text-ink-tertiary transition-colors focus:border-primary-focus"
+                className="input-base mt-5 w-full px-3.5 py-2.5"
               />
               {siteInput.trim() && (
                 <p className={`mt-2 text-xs ${normalizedSite ? "text-emerald-400" : "text-red-400"}`}>
@@ -231,7 +231,7 @@ export function OnboardingWizard() {
                 <button
                   disabled={!normalizedSite}
                   onClick={() => setStep(2)}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-ink-tertiary"
+                  className="btn-primary px-4 disabled:bg-surface-3 disabled:text-ink-tertiary disabled:hover:bg-primary"
                 >
                   Continue
                 </button>
@@ -241,12 +241,12 @@ export function OnboardingWizard() {
 
           {step === 2 && (
             <>
-              <h1 className="text-lg font-semibold tracking-tight text-ink">Tell us about your product</h1>
+              <h1 className="page-title !mt-0">Tell us about your product</h1>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-subtle">
                 The copilot uses this to tailor every recommendation.
               </p>
 
-              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-ink-tertiary">
+              <label className="eyebrow mt-6 block">
                 What is it?
               </label>
               <div className="mt-2 grid grid-cols-2 gap-2">
@@ -257,7 +257,7 @@ export function OnboardingWizard() {
                 ))}
               </div>
 
-              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-ink-tertiary">
+              <label className="eyebrow mt-6 block">
                 Who is it for?
               </label>
               <input
@@ -265,10 +265,10 @@ export function OnboardingWizard() {
                 onChange={(e) => setAudience(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && goal && goToPropertyStep()}
                 placeholder="e.g. indie founders, UPSC aspirants…"
-                className="mt-2 w-full rounded-lg border border-hairline bg-canvas px-3.5 py-2.5 text-sm text-ink outline-none placeholder:text-ink-tertiary transition-colors focus:border-primary-focus"
+                className="input-base mt-2 w-full px-3.5 py-2.5"
               />
 
-              <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-ink-tertiary">
+              <label className="eyebrow mt-6 block">
                 Your #1 goal right now
               </label>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -282,14 +282,14 @@ export function OnboardingWizard() {
               <div className="mt-7 flex items-center justify-between">
                 <button
                   onClick={() => setStep(1)}
-                  className="text-sm text-ink-tertiary transition-colors hover:text-ink-muted"
+                  className="cursor-pointer text-sm text-ink-tertiary transition-colors hover:text-ink-muted"
                 >
                   Back
                 </button>
                 <button
                   disabled={!productType || !audience.trim() || !goal}
                   onClick={goToPropertyStep}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-ink-tertiary"
+                  className="btn-primary px-4 disabled:bg-surface-3 disabled:text-ink-tertiary disabled:hover:bg-primary"
                 >
                   Continue
                 </button>
@@ -299,7 +299,7 @@ export function OnboardingWizard() {
 
           {step === 3 && (
             <>
-              <h1 className="text-lg font-semibold tracking-tight text-ink">Pick your Search Console property</h1>
+              <h1 className="page-title !mt-0">Pick your Search Console property</h1>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-subtle">
                 Impiseo reads data from this one property. You&apos;ll be able to add more later.
               </p>
@@ -347,14 +347,14 @@ export function OnboardingWizard() {
                 <button
                   onClick={() => setStep(2)}
                   disabled={saving}
-                  className="text-sm text-ink-tertiary transition-colors hover:text-ink-muted"
+                  className="cursor-pointer text-sm text-ink-tertiary transition-colors hover:text-ink-muted"
                 >
                   Back
                 </button>
                 <button
                   disabled={!propertyUrl || saving}
                   onClick={finish}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-ink-tertiary"
+                  className="btn-primary px-4 disabled:bg-surface-3 disabled:text-ink-tertiary disabled:hover:bg-primary"
                 >
                   {saving ? "Setting up…" : "Finish setup"}
                 </button>

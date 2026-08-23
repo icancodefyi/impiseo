@@ -38,8 +38,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.55;
   text-rendering: optimizeLegibility;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
@@ -50,9 +50,46 @@ h1,
 h2,
 h3,
 h4 {
-  font-weight: 630;
+  font-weight: 600;
   letter-spacing: -0.02em;
   text-wrap: balance;
+}
+
+@layer components {
+  /* Typography roles — Linear hierarchy scaled for a product dashboard */
+  .page-title {
+    @apply text-[1.375rem] font-semibold leading-tight tracking-[-0.015em] text-ink;
+  }
+  .page-subtitle {
+    @apply mt-1 text-sm leading-relaxed text-ink-subtle;
+  }
+  .section-title {
+    @apply text-base font-semibold tracking-[-0.01em] text-ink;
+  }
+  .item-title {
+    @apply text-[0.9375rem] font-medium tracking-[-0.005em] text-ink;
+  }
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.08em] text-ink-tertiary;
+  }
+
+  /* Cards & containers */
+  .card {
+    @apply rounded-xl border border-hairline bg-surface-1;
+  }
+
+  /* Buttons — 8px radius, ≥36px height, 14px/500 labels */
+  .btn-primary {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-hairline bg-surface-1 px-3.5 py-2 text-sm font-medium text-ink-muted transition-colors hover:border-hairline-strong hover:bg-surface-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Inputs */
+  .input-base {
+    @apply rounded-lg border border-hairline bg-surface-1 px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-ink-tertiary focus:border-primary-focus;
+  }
 }
 
 strong,

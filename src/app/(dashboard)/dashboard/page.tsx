@@ -44,7 +44,7 @@ export default function OverviewPage() {
   const p = stats?.prevTotals;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <PageHeader
         title="Overview"
         subtitle={`${shortDate(stats?.range.start ?? "")} – ${shortDate(stats?.range.end ?? "")} vs previous period`}
@@ -70,9 +70,9 @@ export default function OverviewPage() {
             <KpiCard label="Avg. position" value={fmtPos(t.position)} delta={pctChange(t.position, p.position)} invertDelta />
           </section>
 
-          <section className="rounded-xl border border-hairline bg-surface-1 p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-[0.8125rem] font-semibold tracking-tight text-ink">Performance</h2>
+          <section className="rounded-xl border border-hairline bg-surface-1 p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="section-title">Performance</h2>
               <p className="text-xs text-ink-tertiary">last {days} days</p>
             </div>
             <div className="h-72">
@@ -112,18 +112,18 @@ export default function OverviewPage() {
           </section>
 
           {phStats?.connected && phStats.totals ? (
-            <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-surface-1 px-5 py-4">
+            <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-surface-1 px-6 py-5">
               <div>
-                <h2 className="text-[0.8125rem] font-semibold tracking-tight text-ink">Product analytics</h2>
-                <p className="mt-0.5 text-xs text-ink-tertiary">PostHog · last {days} days · full breakdown on Pages</p>
+                <h2 className="section-title">Product analytics</h2>
+                <p className="mt-0.5 text-sm text-ink-subtle">PostHog · last {days} days · full breakdown on Pages</p>
               </div>
               <div className="flex gap-8">
                 <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-ink-tertiary">Visitors</p>
+                  <p className="eyebrow">Visitors</p>
                   <p className="text-lg font-semibold leading-tight tabular-nums text-ink">{nf.format(phStats.totals.visitors)}</p>
                 </div>
                 <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-ink-tertiary">Pageviews</p>
+                  <p className="eyebrow">Pageviews</p>
                   <p className="text-lg font-semibold leading-tight tabular-nums text-ink">{nf.format(phStats.totals.pageviews)}</p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export default function OverviewPage() {
               </p>
               <Link
                 href="/integrations"
-                className="rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+                className="btn-primary"
               >
                 Connect PostHog
               </Link>

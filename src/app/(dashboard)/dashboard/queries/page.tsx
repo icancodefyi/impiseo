@@ -9,7 +9,7 @@ export default function QueriesPage() {
   if (!stats && loading) return <Loader label="Fetching Search Console data…" />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <PageHeader title="Queries" subtitle="What people searched before landing on your site" />
       {error && <ErrorBanner message={error} />}
       <MetricTable title={`Top queries · last 28 days`} rows={stats?.queries ?? []} />

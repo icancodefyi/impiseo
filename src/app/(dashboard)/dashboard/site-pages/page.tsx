@@ -46,7 +46,7 @@ export default function SitePagesPage() {
   if (!stats && loading) return <Loader label="Fetching Search Console data…" />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <PageHeader
         title="Pages"
         subtitle={`Search Console clicks vs PostHog pageviews · last ${days} days · GSC data lags ~3 days`}
@@ -54,16 +54,16 @@ export default function SitePagesPage() {
 
       {error && <ErrorBanner message={error} />}
 
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-hairline bg-surface-1 px-5 py-3.5">
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-hairline bg-surface-1 px-6 py-4">
         <button
           onClick={runSyncAndCrawl}
           disabled={crawlState === "running"}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-primary"
         >
           <IconSpider size={15} stroke={1.75} />
           {crawlState === "running" ? "Working…" : "Sync & analyze page content"}
         </button>
-        {progress && <p className="text-xs text-ink-subtle">{progress}</p>}
+        {progress && <p className="text-sm text-ink-subtle">{progress}</p>}
       </div>
 
       <section className="overflow-hidden rounded-xl border border-hairline bg-surface-1">
@@ -82,34 +82,34 @@ export default function SitePagesPage() {
         )}
         {rows.length > 0 && (
           <div className="max-h-[640px] overflow-auto">
-            <table className="w-full min-w-[640px] text-sm">
-              <thead className="sticky top-0 bg-surface-1 text-left text-xs uppercase tracking-wider text-ink-tertiary">
+            <table className="w-full min-w-[680px] text-sm">
+              <thead className="sticky top-0 z-[1] bg-surface-1 text-left">
                 <tr>
-                  <th className="px-5 py-2.5 font-medium">Page</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Clicks</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Impr.</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Pos.</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Views</th>
-                  <th className="px-5 py-2.5 text-right font-medium">Visitors</th>
+                  <th className="eyebrow px-6 pb-3 pt-3.5 font-medium">Page</th>
+                  <th className="eyebrow px-4 pb-3 pt-3.5 text-right font-medium">Clicks</th>
+                  <th className="eyebrow px-4 pb-3 pt-3.5 text-right font-medium">Impr.</th>
+                  <th className="eyebrow px-4 pb-3 pt-3.5 text-right font-medium">Pos.</th>
+                  <th className="eyebrow px-4 pb-3 pt-3.5 text-right font-medium">Views</th>
+                  <th className="eyebrow px-6 pb-3 pt-3.5 text-right font-medium">Visitors</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.path} className="border-t border-hairline-tertiary transition-colors hover:bg-surface-2/60">
-                    <td className="max-w-[360px] truncate px-5 py-2.5 font-medium text-ink" title={r.path}>
+                    <td className="max-w-[380px] truncate px-6 py-3 font-medium text-ink" title={r.path}>
                       {r.path}
                     </td>
-                    <td className="px-3 py-2.5 text-right font-medium tabular-nums text-ink-muted">{nf.format(r.clicks)}</td>
-                    <td className="px-3 py-2.5 text-right tabular-nums text-ink-subtle">{nf.format(r.impressions)}</td>
-                    <td className="px-3 py-2.5 text-right">
+                    <td className="px-4 py-3 text-right font-medium tabular-nums text-ink-muted">{nf.format(r.clicks)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-ink-subtle">{nf.format(r.impressions)}</td>
+                    <td className="px-4 py-3 text-right">
                       <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium tabular-nums ${posColor(r.position)}`}>
                         {fmtPos(r.position)}
                       </span>
                     </td>
-                    <td className={`px-3 py-2.5 text-right font-medium tabular-nums ${r.clicks > 0 && r.views === 0 ? "text-red-400" : "text-ink-muted"}`}>
+                    <td className={`px-4 py-3 text-right font-medium tabular-nums ${r.clicks > 0 && r.views === 0 ? "text-red-400" : "text-ink-muted"}`}>
                       {nf.format(r.views)}
                     </td>
-                    <td className="px-5 py-2.5 text-right tabular-nums text-ink-subtle">{nf.format(r.visitors)}</td>
+                    <td className="px-6 py-3 text-right tabular-nums text-ink-subtle">{nf.format(r.visitors)}</td>
                   </tr>
                 ))}
               </tbody>

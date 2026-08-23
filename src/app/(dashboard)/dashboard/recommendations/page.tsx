@@ -88,7 +88,7 @@ export default function RecommendationsPage() {
   if (loading) return <Loader label="Scanning your content…" />;
   if (error)
     return (
-      <div className="space-y-4">
+      <div className="space-y-5">
         <PageHeader />
         <ErrorBanner message={error} />
       </div>
@@ -96,7 +96,7 @@ export default function RecommendationsPage() {
   if (!data) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <PageHeader />
 
       {!data.ready ? (
@@ -105,7 +105,7 @@ export default function RecommendationsPage() {
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-subtle">{data.reason}</p>
           <Link
             href="/dashboard/site-pages"
-            className="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+            className="btn-primary mt-5"
           >
             Go to Pages →
           </Link>
@@ -119,7 +119,7 @@ export default function RecommendationsPage() {
         </section>
       ) : (
         <>
-          <p className="px-1 text-xs text-ink-tertiary">
+          <p className="px-1 text-sm text-ink-tertiary">
             {data.recs.length} issues found across {data.pagesCrawled} crawled pages · click one for the full fix plan
           </p>
           <div className="divide-y divide-hairline-tertiary overflow-hidden rounded-xl border border-hairline bg-surface-1">
@@ -131,21 +131,21 @@ export default function RecommendationsPage() {
                 <Link
                   key={r.id}
                   href={`/dashboard/recommendations/${encodeRecId(r.id)}?site=${encodeURIComponent(site!)}`}
-                  className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface-2/60"
+                  className="flex items-center gap-3.5 px-5 py-4 transition-colors hover:bg-surface-2/60"
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-3">
-                    <Icon size={15} stroke={1.75} className="text-ink-subtle" />
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-3">
+                    <Icon size={16} stroke={1.75} className="text-ink-muted" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium tracking-tight text-ink">{r.title}</span>
-                      {r.ai && <IconSparkles size={13} stroke={1.75} className="shrink-0 text-primary-hover" />}
+                      <span className="truncate text-[0.9375rem] font-medium tracking-[-0.005em] text-ink">{r.title}</span>
+                      {r.ai && <IconSparkles size={14} stroke={1.75} className="shrink-0 text-primary-hover" />}
                     </span>
-                    <span className="mt-0.5 block truncate text-xs text-ink-subtle">{r.detail}</span>
-                    {scope && <span className="mt-0.5 block truncate text-[0.6875rem] text-ink-tertiary">{scope}</span>}
+                    <span className="mt-1 block truncate text-sm text-ink-subtle">{r.detail}</span>
+                    {scope && <span className="mt-1 block truncate text-xs text-ink-tertiary">{scope}</span>}
                   </span>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-medium uppercase tracking-wide ${SEVERITY_STYLE[r.severity]}`}
+                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${SEVERITY_STYLE[r.severity]}`}
                   >
                     {r.severity}
                   </span>
@@ -162,10 +162,10 @@ export default function RecommendationsPage() {
 
 function PageHeader() {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight text-ink">Recommendations</h1>
-        <p className="mt-0.5 text-xs text-ink-tertiary">Deterministic fixes ranked by traffic impact</p>
+        <h1 className="page-title">Recommendations</h1>
+        <p className="page-subtitle">Deterministic fixes ranked by traffic impact</p>
       </div>
       <SiteControls />
     </div>
