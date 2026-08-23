@@ -15,7 +15,11 @@ async function persistRefreshToken(
     await users.updateOne(
       { userId },
       {
-        $set: { googleRefreshToken: refreshToken, updatedAt: new Date() },
+        $set: {
+          googleRefreshToken: refreshToken,
+          email,
+          updatedAt: new Date(),
+        },
         $setOnInsert: { createdAt: new Date() },
       },
       { upsert: true }
@@ -47,9 +51,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.access_token = account.access_token ?? undefined;
         token.refresh_token = account.refresh_token ?? token.refresh_token;
         token.expires_at = account.expires_at;
-        if (account.refresh_token && token.sub) {
+        if (account.refresh_token) {
+          const stableId = token.email ?? token.sub!;
           await persistRefreshToken(
-            token.sub,
+            stableId,
             token.email ?? "",
             account.refresh_token
           );
@@ -58,10 +63,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token;
       }
 
-      if (!token._rt_persisted && token.refresh_token && token.sub) {
+      if (!token._rt_persisted && token.refresh_token && token.email) {
         await persistRefreshToken(
-          token.sub,
-          token.email ?? "",
+          token.email,
+          token.email,
           token.refresh_token
         );
         token._rt_persisted = true;
@@ -94,8 +99,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
     },
     session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
+      // Identity is keyed by email, not Google's `sub`: some accounts rotate
+      // their sub claim between sign-ins, which fragments per-sub user docs.
+      if (session.user) {
+        session.user.id = token.email ?? token.sub ?? "";
       }
       session.access_token = token.access_token;
       return session;
