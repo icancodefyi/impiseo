@@ -1,9 +1,17 @@
 import { Container } from "./ui";
 
-const COLUMNS: { title: string; links: string[] }[] = [
-  { title: "Product", links: ["Features", "How it works", "Integrations", "Changelog"] },
-  { title: "Resources", links: ["SEO skills library", "Docs", "API"] },
-  { title: "Company", links: ["About", "Contact", "Privacy", "Terms"] },
+const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
+  {
+    title: "Product",
+    links: [
+      { label: "Features", href: "#features" },
+      { label: "How it works", href: "#how-it-works" },
+      { label: "Integrations", href: "/integrations" },
+      { label: "AI API (MCP)", href: "/mcp" },
+    ],
+  },
+  { title: "Resources", links: [{ label: "SEO skills library", href: "#" }, { label: "Docs", href: "#" }, { label: "API", href: "/mcp" }] },
+  { title: "Company", links: [{ label: "About", href: "#" }, { label: "Contact", href: "#" }, { label: "Privacy", href: "#" }, { label: "Terms", href: "#" }] },
 ];
 
 export function Footer() {
@@ -28,9 +36,9 @@ export function Footer() {
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#d0d6e0]">{col.title}</h3>
               <ul className="mt-3 space-y-2">
                 {col.links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="text-xs text-[#8a8f98] transition-colors hover:text-[#f7f8f8]">
-                      {l}
+                  <li key={l.label}>
+                    <a href={l.href} className="text-xs text-[#8a8f98] transition-colors hover:text-[#f7f8f8]">
+                      {l.label}
                     </a>
                   </li>
                 ))}

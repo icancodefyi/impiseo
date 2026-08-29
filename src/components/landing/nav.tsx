@@ -5,6 +5,7 @@ const LINKS = [
   { label: "Features", href: "#features" },
   { label: "How it works", href: "#how-it-works" },
   { label: "Copilot", href: "#copilot" },
+  { label: "AI API (MCP)", href: "/mcp" },
 ];
 
 export function TopNav() {
