@@ -26,7 +26,7 @@ export async function loadRuleInputs(
   const { pages, page_content } = await getCollections();
 
   const [pageDocs, contentDocs, connections] = await Promise.all([
-    pages.find({ userId, siteUrl: site }).toArray(),
+    pages.find({ userId, siteUrl: site, active: { $ne: false } }).toArray(),
     page_content.find({ userId, siteUrl: site }).toArray(),
     getConnections(userId),
   ]);

@@ -179,7 +179,12 @@ export async function crawlPage(
     return { status: "skipped", reason: `non-HTML content-type: ${contentType.split(";")[0]}` };
   }
 
-  const html = await res.text();
+  let html: string;
+  try {
+    html = await res.text();
+  } catch (e) {
+    return { status: "error", error: e instanceof Error ? e.message : "failed to read response body" };
+  }
   return {
     status: "ok",
     content: {
