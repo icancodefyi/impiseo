@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 type ToolDoc = {
   name: string;
   desc: string;
+  returns?: string;
   params: [string, string, string][] | [];
 };
 
@@ -17,16 +18,20 @@ const TOOLS: ToolDoc[] = [
   {
     name: "get_profile",
     desc: "Account identity, plan context, connected properties and the active Search Console property.",
+    returns: "{ ok, userId, email, onboarded, product, properties[], activeProperty, createdAt }",
     params: [] as [string, string, string][],
   },
   {
     name: "list_sites",
     desc: "All Search Console properties on the account with permission level, plus the active one.",
+    returns: "{ ok, activeProperty, properties: [{ url, permissionLevel, addedAt }] }",
     params: [] as [string, string, string][],
   },
   {
     name: "get_overview",
     desc: "Dashboard-style totals, previous-period totals, daily series, top 25 queries and top 25 pages.",
+    returns:
+      "{ ok, range: { start, end, prevStart, prevEnd }, totals, prevTotals, series: [{ date, clicks, impressions }], queries[], pages[] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
       ["days", "number", "Window in days, 1–90 (default 28)."],
@@ -35,24 +40,31 @@ const TOOLS: ToolDoc[] = [
   {
     name: "get_queries",
     desc: "Top organic queries sorted by clicks, with impressions, CTR and position.",
+    returns:
+      "{ ok, site, range, offset, limit, count, queries: [{ key, clicks, impressions, ctr, position }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
       ["days", "number", "Window in days, 1–90 (default 28)."],
+      ["offset", "number", "Row offset for paging, 0–25000 (default 0)."],
       ["limit", "number", "Max rows, 1–300 (default 100)."],
     ],
   },
   {
     name: "get_pages",
-    desc: "Top organic pages sorted by clicks, with impressions, CTR and position.",
+    desc: "Top organic pages sorted by clicks, joined with each page's crawled title, meta description and word count when available.",
+    returns:
+      "{ ok, site, range, offset, limit, count, pages: [{ path, clicks, impressions, ctr, position, title, metaDescription, wordCount, httpStatus }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
       ["days", "number", "Window in days, 1–90 (default 28)."],
+      ["offset", "number", "Row offset for paging, 0–25000 (default 0)."],
       ["limit", "number", "Max rows, 1–300 (default 100)."],
     ],
   },
   {
     name: "get_page_queries",
     desc: "The queries sending traffic to one page — live from Search Console.",
+    returns: "{ ok, page, normalizedPath, count, queries: [{ page, query, clicks, impressions, ctr, position }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
       ["page", "string", "Required. The page path (e.g. /blog/post-1)."],
@@ -63,6 +75,7 @@ const TOOLS: ToolDoc[] = [
   {
     name: "get_query_pages",
     desc: "Which pages rank for one query — live from Search Console.",
+    returns: "{ ok, query, count, pages: [{ query, page, clicks, impressions, ctr, position }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
       ["query", "string", "Required. The exact query to filter by."],
@@ -71,8 +84,25 @@ const TOOLS: ToolDoc[] = [
     ],
   },
   {
+    name: "get_query_opportunities",
+    desc: "Runs the opportunities math across every query: the best-ranking page, the words that page misses vs the query, projected clicks at top 3 and top 1, clicks left on the table (headroom), intent, cluster, and a deterministic fixing suggestion. Live GSC + stored crawl content; paged with offset + limit.",
+    returns:
+      "{ ok, site, range, offset, limit, count, total, queries: [{ query, clicks, impressions, ctr, position, intent, topPagePath, pageTitle, matchScore, missingTerms[], clusterId, clusterTopic, clusterSize, projectedTop3, headroomTop3, projectedTop1, headroomTop1, fixing }] }",
+    params: [
+      ["site", "string", "GSC property URL. Defaults to active property."],
+      ["days", "number", "Window in days, 1–90 (default 28)."],
+      ["offset", "number", "Row offset for paging, 0–25000 (default 0)."],
+      ["limit", "number", "Max rows, 1–500 (default 100)."],
+      ["minImpressions", "number", "Only queries with at least this many impressions (default 0 = all)."],
+      ["queryContains", "string", "Only queries containing this substring (case-insensitive)."],
+      ["excludeBranded", "boolean", "Drop queries containing the brand token (default true)."],
+    ],
+  },
+  {
     name: "get_ideas",
     desc: "Latest content-ideas run (gap, striking-distance, intent-mismatch, winner-expansion, new-topic) with stats and every idea's summary.",
+    returns:
+      "{ ok, hasRun, generatedAt, stats: { queriesAnalyzed, ideasReturned, … }, ideas: [{ id, type, topic, queriesCount, impressions90d, … }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
     ],
@@ -80,6 +110,7 @@ const TOOLS: ToolDoc[] = [
   {
     name: "get_idea_detail",
     desc: "Full detail for one idea: evidence, top queries, covering pages, autocomplete phrasings, AI angle and outline.",
+    returns: "{ ok, found, idea: { id, type, topic, evidence, angle?, outline? } }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
       ["ideaId", "string", "Required. The idea id from get_ideas."],
@@ -88,13 +119,16 @@ const TOOLS: ToolDoc[] = [
   {
     name: "list_idea_runs",
     desc: "History of idea-generation runs with their stats (without the full idea payload).",
+    returns: "{ ok, count, runs: [{ userId, siteUrl, generatedAt, stats }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
     ],
   },
   {
     name: "get_recommendations",
-    desc: "Runnable recs engine output: meta/title/thin-content/striking-distance fixes with impact scores.",
+    desc: "Runnable recs engine output: meta/title/thin-content/striking-distance fixes with impact scores. Grouped recs include per-page evidence — each affected path with its title, meta description and word count.",
+    returns:
+      "{ ok, count, recommendations: [{ id, type, severity, path, title, detail, action, impact, paths?: [{ path, impressions, title, metaDescription, wordCount }] }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
     ],
@@ -102,6 +136,7 @@ const TOOLS: ToolDoc[] = [
   {
     name: "get_rec_enhancements",
     desc: "Stored AI fix plans for recommendations: why, steps, draft title/meta, agent prompt.",
+    returns: "{ ok, count, enhancements: [{ recId, fingerprint, why, steps[], draftTitle, draftMeta, agentPrompt }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
       ["recId", "string", "Optional. A specific rec id to fetch, e.g. /blog/post::missing-meta."],
@@ -110,6 +145,8 @@ const TOOLS: ToolDoc[] = [
   {
     name: "get_page_content",
     desc: "Crawled on-page data we stored: title, meta description, headings, word count, structured data, http status. Not a live fetch.",
+    returns:
+      "{ ok, count, pages: [{ path, httpStatus, title, metaDescription, canonical, headings[], wordCount, textSample, structuredData[], fetchedAt }] }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
       ["path", "string", "Exact normalized path to look up."],
@@ -118,8 +155,20 @@ const TOOLS: ToolDoc[] = [
     ],
   },
   {
+    name: "get_page_html",
+    desc: "Live-fetches one of your own pages right now and parses its DOM: title, meta description, canonical, word count, every heading with its level and on-page order, plus the raw HTML (optional). Best for DOM/structure auditing.",
+    returns:
+      "{ ok, origin, url, finalUrl, httpStatus, contentType, fetchedAt, sizeBytes, title, metaDescription, canonical, wordCount, headings: [{ level, text, position }], html }",
+    params: [
+      ["site", "string", "GSC property URL. Defaults to active property."],
+      ["page", "string", "Required. Page path (e.g. /blog/post-1) or full URL on the same origin."],
+      ["includeHtml", "boolean", "Include the raw HTML in the response (default false)."],
+    ],
+  },
+  {
     name: "get_crawl_status",
     desc: "How many pages have metrics, how many have been content-crawled, and the last sync time.",
+    returns: "{ ok, site, pagesWithMetrics, pagesWithContent, lastSyncedAt }",
     params: [
       ["site", "string", "GSC property URL. Defaults to active property."],
     ],
@@ -201,6 +250,25 @@ export default function McpDocsPage() {
       </section>
 
       <section className="mb-10">
+        <h2 className="mb-3 text-lg font-semibold tracking-[-0.01em] text-ink">Response format</h2>
+        <p className="mb-3 text-[0.9375rem] leading-relaxed text-ink-subtle">
+          Every tool returns the same stable envelope, so you never need to sniff the shape of a
+          response. Success carries{" "}
+          <code className="font-mono text-[0.8125rem] text-emerald-300">ok: true</code> plus the
+          tool’s payload; failures carry{" "}
+          <code className="font-mono text-[0.8125rem] text-emerald-300">ok: false</code> and a
+          human-readable <code className="font-mono text-[0.8125rem] text-emerald-300">error</code>.
+          The real object is delivered in{" "}
+          <code className="font-mono text-[0.8125rem] text-emerald-300">structuredContent</code>{" "}
+          (no JSON-in-JSON); <code className="font-mono text-[0.8125rem] text-emerald-300">content[0].text</code>{" "}
+          holds a pretty-printed copy for debugging.
+        </p>
+        <Code>{`{ "ok": true, "activeProperty": "sc-domain:example.com", "count": 3, "queries": [ … ] }
+
+{ "ok": false, "error": "Invalid params: …" }`}</Code>
+      </section>
+
+      <section className="mb-10">
         <h2 className="mb-3 text-lg font-semibold tracking-[-0.01em] text-ink">1. Get a personal API key</h2>
         <p className="text-[0.9375rem] leading-relaxed text-ink-subtle">
           Keys are minted against your account and resolve to your <em>own</em> data only:
@@ -265,6 +333,10 @@ curl -N -X POST http://localhost:3777/mcp \\
                 </span>
               </div>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-subtle">{tool.desc}</p>
+              <p className="mt-2 font-mono text-[0.8125rem] leading-relaxed text-ink-tertiary">
+                <span className="uppercase tracking-wide text-ink-muted">returns </span>
+                {tool.returns ?? "an { ok: true, ... } object with the tool-specific fields."}
+              </p>
               <ParamTable params={tool.params} />
             </div>
           ))}
@@ -275,7 +347,10 @@ curl -N -X POST http://localhost:3777/mcp \\
         <h2 className="mb-3 text-lg font-semibold tracking-[-0.01em] text-ink">Notes</h2>
         <ul className="list-disc space-y-1.5 pl-5 text-[0.9375rem] leading-relaxed text-ink-subtle">
           <li>GSC numbers reflect a ~3-day publishing lag — the server queries fully-settled days.</li>
-          <li>Live tools (overview, queries, pages, page_queries, query_pages) hit Google on every call; cached crawl, idea and recommendation tools read stored data instantly.</li>
+          <li>Out-of-range parameters are rejected with a clear message; limits come from the tool’s JSON schema (e.g. <code className="font-mono text-[0.8125rem] text-emerald-300">days</code> 1–90, <code className="font-mono text-[0.8125rem] text-emerald-300">limit</code> up to 300, <code className="font-mono text-[0.8125rem] text-emerald-300">offset</code> up to 25000).</li>
+          <li>Page through <code className="font-mono text-[0.8125rem] text-emerald-300">get_queries</code> / <code className="font-mono text-[0.8125rem] text-emerald-300">get_pages</code> with <code className="font-mono text-[0.8125rem] text-emerald-300">offset + limit</code> to export everything.</li>
+          <li><code className="font-mono text-[0.8125rem] text-emerald-300">get_query_opportunities</code> analyzes every query (not just the top 25); its headroom figures are projections from an industry CTR curve, so treat them as estimates. Exports are capped at 25,000 GSC rows.</li>
+          <li>Live tools (overview, queries, pages, page_queries, query_pages, page_html) hit Google or the live site on every call; cached crawl, idea and recommendation tools read stored data instantly.</li>
           <li>Delete a key any time by removing its document from the <code className="font-mono text-[0.8125rem] text-emerald-300">api_keys</code> collection — the token stops working immediately.</li>
         </ul>
       </section>
