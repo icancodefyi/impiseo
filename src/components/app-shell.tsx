@@ -6,11 +6,14 @@ import { signOut } from "next-auth/react";
 import {
   IconBulb,
   IconFileText,
+  IconGauge,
   IconLayoutDashboard,
   IconLogout,
   IconPlug,
+  IconReportAnalytics,
   IconSearch,
   IconSparkles,
+  IconTargetArrow,
 } from "@tabler/icons-react";
 import { useDashboard } from "@/lib/dashboard-context";
 import { Loader, SignInCard } from "@/components/widgets";
@@ -19,10 +22,13 @@ const NAV = [
   { href: "/dashboard", label: "Overview", icon: IconLayoutDashboard },
   { href: "/dashboard/site-pages", label: "Pages", icon: IconFileText },
   { href: "/dashboard/queries", label: "Queries", icon: IconSearch },
+  { href: "/dashboard/opportunities", label: "Opportunities", icon: IconTargetArrow },
 ];
 const NAV_BOTTOM = [
   { href: "/dashboard/ideas", label: "Ideas", icon: IconSparkles },
   { href: "/dashboard/recommendations", label: "Recommendations", icon: IconBulb },
+  { href: "/dashboard/technical", label: "Technical", icon: IconGauge },
+  { href: "/dashboard/auditor", label: "Auditor", icon: IconReportAnalytics },
   { href: "/integrations", label: "Integrations", icon: IconPlug },
 ];
 
