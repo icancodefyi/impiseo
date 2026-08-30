@@ -28,9 +28,20 @@ async function hogQL(host: string, apiKey: string, projectId: number, query: str
 
 export type PostHogStats = {
   totals: { pageviews: number; visitors: number };
+  prevTotals?: { pageviews: number; visitors: number };
   daily: { date: string; views: number; visitors: number }[];
   topPages: { path: string; views: number; visitors: number }[];
 };
+
+async function resolveProjectId(base: string, apiKey: string, projectId?: number): Promise<number> {
+  if (projectId) return projectId;
+  const projects = await phFetch(base, "/api/projects/", apiKey);
+  if (!projects.ok) throw new Error("Could not resolve PostHog project.");
+  const data = (await projects.json()) as { results?: { id: number }[] };
+  const found = data.results?.[0]?.id;
+  if (!found) throw new Error("No PostHog project found for this key.");
+  return found;
+}
 
 export async function fetchPosthogStats(opts: {
   host?: string;
@@ -40,16 +51,7 @@ export async function fetchPosthogStats(opts: {
   limit?: number;
 }): Promise<PostHogStats> {
   const base = opts.host?.replace(/\/+$/, "") || DEFAULT_HOST;
-
-  let projectId = opts.projectId;
-  if (!projectId) {
-    const projects = await phFetch(base, "/api/projects/", opts.apiKey);
-    if (!projects.ok) throw new Error("Could not resolve PostHog project.");
-    const data = (await projects.json()) as { results?: { id: number }[] };
-    projectId = data.results?.[0]?.id;
-    if (!projectId) throw new Error("No PostHog project found for this key.");
-  }
-
+  const projectId = await resolveProjectId(base, opts.apiKey, opts.projectId);
   const window = `timestamp >= now() - INTERVAL ${opts.days} DAY`;
   const limit = Math.min(Math.max(opts.limit ?? 10, 1), 100);
 
@@ -88,6 +90,28 @@ export async function fetchPosthogStats(opts: {
       visitors: Number(r[2]),
     })),
   };
+}
+
+/** Pageview totals for a window that starts `offsetDays` days in the past — used for previous-period deltas. */
+export async function fetchPosthogTotals(opts: {
+  host?: string;
+  apiKey: string;
+  projectId?: number;
+  days: number;
+  offsetDays?: number;
+}): Promise<{ pageviews: number; visitors: number }> {
+  const base = opts.host?.replace(/\/+$/, "") || DEFAULT_HOST;
+  const projectId = await resolveProjectId(base, opts.apiKey, opts.projectId);
+  const offset = Math.max(0, opts.offsetDays ?? 0);
+  const window = `timestamp >= now() - INTERVAL ${offset + opts.days} DAY AND timestamp < now() - INTERVAL ${offset} DAY`;
+  const rows = await hogQL(
+    base,
+    opts.apiKey,
+    projectId,
+    `SELECT count(), count(DISTINCT distinct_id) FROM events WHERE event = '$pageview' AND ${window}`
+  );
+  const t = rows[0] ?? [];
+  return { pageviews: Number(t[0] ?? 0), visitors: Number(t[1] ?? 0) };
 }
 
 export const posthogAdapter: ProviderAdapter = {

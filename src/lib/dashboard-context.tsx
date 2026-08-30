@@ -28,6 +28,7 @@ export type Stats = {
 export type PostHogStats = {
   connected: boolean;
   totals: { pageviews: number; visitors: number };
+  prevTotals?: { pageviews: number; visitors: number };
   daily: { date: string; views: number; visitors: number }[];
   topPages: { path: string; views: number; visitors: number }[];
 };
@@ -124,7 +125,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         const p = data.profile;
         setLoggedIn(true);
         setProfile(p);
-        const active = p.properties.find((prop) => prop.url === p.activeProperty);
+        const active = (p.properties ?? []).find((prop) => prop.url === p.activeProperty);
         const lockedSites: Site[] = [
           {
             url: p.activeProperty,

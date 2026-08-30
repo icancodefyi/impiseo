@@ -112,22 +112,62 @@ export default function OverviewPage() {
           </section>
 
           {phStats?.connected && phStats.totals ? (
-            <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-surface-1 px-6 py-5">
-              <div>
-                <h2 className="section-title">Product analytics</h2>
-                <p className="mt-0.5 text-sm text-ink-subtle">PostHog · last {days} days · full breakdown on Pages</p>
-              </div>
-              <div className="flex gap-8">
-                <div>
-                  <p className="eyebrow">Visitors</p>
-                  <p className="text-lg font-semibold leading-tight tabular-nums text-ink">{nf.format(phStats.totals.visitors)}</p>
+            <>
+              <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <KpiCard
+                  label="Visitors"
+                  value={nf.format(phStats.totals.visitors)}
+                  delta={pctChange(phStats.totals.visitors, phStats.prevTotals?.visitors ?? 0)}
+                />
+                <KpiCard
+                  label="Pageviews"
+                  value={nf.format(phStats.totals.pageviews)}
+                  delta={pctChange(phStats.totals.pageviews, phStats.prevTotals?.pageviews ?? 0)}
+                />
+              </section>
+              <section className="rounded-xl border border-hairline bg-surface-1 p-6">
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="section-title">Behavior</h2>
+                  <p className="text-xs text-ink-tertiary">
+                    PostHog · last {days} days · full breakdown on Pages
+                  </p>
                 </div>
-                <div>
-                  <p className="eyebrow">Pageviews</p>
-                  <p className="text-lg font-semibold leading-tight tabular-nums text-ink">{nf.format(phStats.totals.pageviews)}</p>
-                </div>
+                <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={phStats.daily} margin={{ top: 4, right: 4, bottom: 0, left: -18 }}>
+                    <defs>
+                      <linearGradient id="phViewsGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.28} />
+                        <stop offset="100%" stopColor="#22d3ee" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="phVisitorsGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.26} />
+                        <stop offset="100%" stopColor="#a78bfa" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="#23252a" strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={shortDate}
+                      tick={{ fill: "#62666d", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      minTickGap={28}
+                    />
+                    <YAxis yAxisId="left" tick={{ fill: "#62666d", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => compact.format(v)} />
+                    <YAxis yAxisId="right" orientation="right" tick={{ fill: "#62666d", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => compact.format(v)} />
+                    <Tooltip
+                      contentStyle={{ background: "#1b1d22", border: "1px solid #2f3238", borderRadius: 8, fontSize: 12 }}
+                      labelStyle={{ color: "#8a8f98" }}
+                      labelFormatter={(l) => shortDate(String(l))}
+                    />
+                    <Area yAxisId="left" type="monotone" dataKey="views" name="Pageviews" stroke="#22d3ee" strokeWidth={2} fill="url(#phViewsGrad)" />
+                    <Area yAxisId="right" type="monotone" dataKey="visitors" name="Visitors" stroke="#a78bfa" strokeWidth={2} fill="url(#phVisitorsGrad)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </section>
+            </>
           ) : (
             <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-hairline bg-surface-1/40 px-5 py-4">
               <p className="flex items-center gap-2 text-sm text-ink-subtle">
