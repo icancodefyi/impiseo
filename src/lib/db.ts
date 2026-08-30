@@ -7,7 +7,19 @@ async function getClient(): Promise<MongoClient> {
   if (!uri) throw new Error("Missing MONGO_URI in environment");
   if (!globalForMongo._mongoClient) {
     globalForMongo._mongoClient = new MongoClient(uri);
-    await globalForMongo._mongoClient.connect();
+    // After a disconnect or a topology event the cached client is dead forever.
+    // Drop the reference so the next call reconnects instead of hitting a stale
+    // client that can never recover without a process restart.
+    const client = globalForMongo._mongoClient;
+    client.on("close", () => {
+      globalForMongo._mongoClient = undefined;
+      collections = null;
+    });
+    client.on("error", () => {
+      globalForMongo._mongoClient = undefined;
+      collections = null;
+    });
+    await client.connect();
   }
   return globalForMongo._mongoClient;
 }
@@ -28,6 +40,7 @@ export type PageDoc = {
   position: number;
   syncedAt: Date;
   createdAt?: Date;
+  active?: boolean;
 };
 
 export type PageContentDoc = {
@@ -97,6 +110,9 @@ export type IdeaRunDoc = {
     aiPackaged: boolean;
     discoveryPhrasings?: number;
     discoveryTopics?: number;
+    partialData?: boolean;
+    degraded?: boolean;
+    carriedFromPreviousRun?: number;
   };
   ideas: IdeaDoc[];
 };
@@ -119,12 +135,21 @@ export type UserDoc = {
   updatedAt: Date;
 };
 
+export type PageRevenueDoc = {
+  userId: string;
+  siteUrl: string;
+  path: string;
+  monthlyRevenue: number;
+  updatedAt: Date;
+};
+
 type Collections = {
   pages: import("mongodb").Collection<PageDoc>;
   page_content: import("mongodb").Collection<PageContentDoc>;
   rec_enhancements: import("mongodb").Collection<RecEnhancementDoc>;
   users: import("mongodb").Collection<UserDoc>;
   idea_runs: import("mongodb").Collection<IdeaRunDoc>;
+  page_revenue: import("mongodb").Collection<PageRevenueDoc>;
 };
 
 let collections: Collections | null = null;
@@ -139,6 +164,7 @@ export async function getCollections(): Promise<Collections> {
   const rec_enhancements = db.collection<RecEnhancementDoc>("rec_enhancements");
   const users = db.collection<UserDoc>("users");
   const idea_runs = db.collection<IdeaRunDoc>("idea_runs");
+  const page_revenue = db.collection<PageRevenueDoc>("page_revenue");
   await Promise.all([
     pages.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
     page_content.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
@@ -149,8 +175,9 @@ export async function getCollections(): Promise<Collections> {
       { unique: true, sparse: true, name: "widgetToken_unique" }
     ),
     idea_runs.createIndex({ userId: 1, siteUrl: 1 }, { unique: true }),
+    page_revenue.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
   ]);
 
-  collections = { pages, page_content, rec_enhancements, users, idea_runs };
+  collections = { pages, page_content, rec_enhancements, users, idea_runs, page_revenue };
   return collections;
 }
