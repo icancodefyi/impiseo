@@ -55,6 +55,12 @@ export async function POST(req: Request) {
 
     const { users } = await getCollections();
     const now = new Date();
+    const existing = await users.findOne({ userId: session.user.id });
+    const propertyEntry = { url: body.propertyUrl, permissionLevel: entry.permissionLevel, addedAt: now };
+    const properties = [
+      ...(existing?.properties ?? []).filter((p) => p.url !== body.propertyUrl),
+      propertyEntry,
+    ];
     await users.updateOne(
       { userId: session.user.id },
       {
@@ -68,14 +74,12 @@ export async function POST(req: Request) {
             goal: body.product?.goal ?? "",
           },
           activeProperty: body.propertyUrl,
+          properties,
           updatedAt: now,
         },
         $setOnInsert: {
           userId: session.user.id,
           createdAt: now,
-          properties: [
-            { url: body.propertyUrl, permissionLevel: entry.permissionLevel, addedAt: now },
-          ],
         },
       },
       { upsert: true }
