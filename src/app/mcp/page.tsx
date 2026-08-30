@@ -271,10 +271,15 @@ export default function McpDocsPage() {
       <section className="mb-10">
         <h2 className="mb-3 text-lg font-semibold tracking-[-0.01em] text-ink">1. Get a personal API key</h2>
         <p className="text-[0.9375rem] leading-relaxed text-ink-subtle">
-          Keys are minted against your account and resolve to your <em>own</em> data only:
+          Create and revoke keys from the dashboard under{" "}
+          <code className="font-mono text-[0.8125rem] text-emerald-300">Dashboard → API Keys</code>, or mint one
+          from the server directly. Keys resolve to your <em>own</em> data only:
         </p>
-        <Code>{`pnpm tsx src/keygen.ts "you@example.com" "my-agent"
-#   key:  imp_ab12cd_XYZabc123
+        <Code>{`# from the dashboard:  Dashboard → API Keys → Create API key
+#   key:  imp_ab12cd_XYZabc123   (shown once, stored hashed)
+
+# or from the impiseo-mcp repo:
+pnpm tsx src/keygen.ts "you@example.com" "my-agent"
 
 # hand that key to any MCP client as the Authorization: Bearer token`}</Code>
       </section>
@@ -351,7 +356,7 @@ curl -N -X POST http://localhost:3777/mcp \\
           <li>Page through <code className="font-mono text-[0.8125rem] text-emerald-300">get_queries</code> / <code className="font-mono text-[0.8125rem] text-emerald-300">get_pages</code> with <code className="font-mono text-[0.8125rem] text-emerald-300">offset + limit</code> to export everything.</li>
           <li><code className="font-mono text-[0.8125rem] text-emerald-300">get_query_opportunities</code> analyzes every query (not just the top 25); its headroom figures are projections from an industry CTR curve, so treat them as estimates. Exports are capped at 25,000 GSC rows.</li>
           <li>Live tools (overview, queries, pages, page_queries, query_pages, page_html) hit Google or the live site on every call; cached crawl, idea and recommendation tools read stored data instantly.</li>
-          <li>Delete a key any time by removing its document from the <code className="font-mono text-[0.8125rem] text-emerald-300">api_keys</code> collection — the token stops working immediately.</li>
+          <li>Manage keys in the dashboard under <code className="font-mono text-[0.8125rem] text-emerald-300">Dashboard → API Keys</code> — revoking a key stops it working immediately.</li>
         </ul>
       </section>
 
