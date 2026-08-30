@@ -32,11 +32,21 @@ export async function GET(req: NextRequest) {
     const recommendations = generateRecommendations(inputs);
 
     const { rec_enhancements } = await getCollections();
+    const recIds = recommendations.map((r) => r.id);
+
+    // GC: delete AI enhancements for recs that no longer exist — data shifts
+    // continuously and stale blobs would otherwise pile up forever.
+    await rec_enhancements.deleteMany({
+      userId,
+      siteUrl: site,
+      recId: { $nin: recIds },
+    });
+
     const cached = await rec_enhancements
       .find({
         userId,
         siteUrl: site,
-        recId: { $in: recommendations.map((r) => r.id) },
+        recId: { $in: recIds },
       })
       .toArray();
     const aiByRecId = new Map(
