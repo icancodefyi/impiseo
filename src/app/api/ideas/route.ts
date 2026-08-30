@@ -2,8 +2,25 @@ import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { getCollections } from "@/lib/db";
 import { packageIdeasWithAI, runIdeaResearch } from "@/lib/ideas-engine";
+import type { IdeaRunDoc } from "@/lib/db";
 
 const FRESH_MS = 7 * 24 * 60 * 60 * 1000;
+
+function carryForward(previous: IdeaRunDoc, next: IdeaRunDoc): IdeaRunDoc {
+  if (!previous || previous.ideas.length === 0) return next;
+  const have = new Set(next.ideas.map((i) => i.id));
+  const carried = previous.ideas.filter((i) => !have.has(i.id));
+  if (carried.length === 0) return next;
+  return {
+    ...next,
+    ideas: [...carried, ...next.ideas],
+    stats: {
+      ...next.stats,
+      ideasReturned: next.ideas.length + carried.length,
+      carriedFromPreviousRun: carried.length,
+    },
+  };
+}
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -24,14 +41,21 @@ export async function GET(req: NextRequest) {
     const { idea_runs, page_content } = await getCollections();
 
     const cached = await idea_runs.findOne({ userId, siteUrl: site });
-    if (!refresh && cached && Date.now() - new Date(cached.generatedAt).getTime() < FRESH_MS) {
-      return NextResponse.json({ ready: true, cached: true, ...cached });
-    }
+
+    // Cached-only reads (idea detail pages) should still resolve a past run even
+    // after the freshness window lapses — a stale idea beats "no longer exists".
     if (cachedOnly) {
+      if (cached) {
+        return NextResponse.json({ ready: true, cached: true, ...cached });
+      }
       return NextResponse.json({
         ready: false,
         reason: "No research run stored yet — open the Ideas page to run one.",
       });
+    }
+
+    if (!refresh && cached && Date.now() - new Date(cached.generatedAt).getTime() < FRESH_MS) {
+      return NextResponse.json({ ready: true, cached: true, ...cached });
     }
 
     const crawledCount = await page_content.countDocuments({ userId, siteUrl: site });
@@ -39,12 +63,37 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         ready: false,
         reason:
-          "Ideas need your crawled page inventory to detect coverage gaps. Run “Sync & analyze page content” on the Pages page first.",
+          "Ideas need your crawled page inventory to detect coverage gaps. Run a crawl on the Pages page first.",
       });
     }
 
-    let run = await runIdeaResearch(userId, site, accessToken);
+    let run: IdeaRunDoc;
+    try {
+      run = await runIdeaResearch(userId, site, accessToken);
+    } catch (err) {
+      // Research failed (GSC quota, network, auth blip). Never drop the last
+      // good run — serve it as stale data instead of returning a bare 500.
+      if (cached) {
+        console.error("[/api/ideas] research failed, serving stale run:", err);
+        return NextResponse.json({ ready: true, cached: true, stale: true, ...cached });
+      }
+      throw err;
+    }
 
+    // A degraded re-run (partial GSC coverage) must never permanently wipe a
+    // richer prior run. Carry forward ideas the new run failed to surface.
+    const previousAnalyzed = cached?.stats.queriesAnalyzed ?? 0;
+    const degraded =
+      Boolean(run.stats.partialData) ||
+      (previousAnalyzed > 0 && run.stats.queriesAnalyzed < previousAnalyzed * 0.8);
+    if (degraded) {
+      run = carryForward(cached!, run);
+      run.stats.degraded = true;
+    }
+
+    if (run.stats.queriesAnalyzed === 0 && cached) {
+      return NextResponse.json({ ready: true, cached: true, degraded: true, ...cached });
+    }
     if (run.stats.queriesAnalyzed === 0) {
       return NextResponse.json({
         ready: false,

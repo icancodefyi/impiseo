@@ -31,6 +31,8 @@ type Run = {
   ready: boolean;
   reason?: string;
   cached?: boolean;
+  stale?: boolean;
+  degraded?: boolean;
   generatedAt?: string;
   stats?: {
     windowDays: number;
@@ -39,6 +41,9 @@ type Run = {
     clustersFormed: number;
     ideasReturned: number;
     aiPackaged: boolean;
+    partialData?: boolean;
+    degraded?: boolean;
+    carriedFromPreviousRun?: number;
   };
   ideas?: Idea[];
 };
@@ -134,6 +139,23 @@ export default function IdeasPage() {
       </div>
 
       {error && <ErrorBanner message={error} />}
+
+      {(data?.stale || data?.degraded || data?.stats?.partialData) && (
+        <section className="rounded-xl border border-amber-500/30 bg-amber-500/[0.06] px-5 py-4">
+          <p className="text-[0.9375rem] font-medium text-amber-300">
+            {data?.stale
+              ? "Showing the last stored research run — fresh research is temporarily unavailable."
+              : data?.stats?.partialData
+                ? "Search Console returned partial coverage for this run — some ideas below may be incomplete."
+                : "This run had partial data — it reflects the last good research rather than overwriting it."}
+          </p>
+          {data?.stats?.carriedFromPreviousRun ? (
+            <p className="mt-1 text-sm text-ink-subtle">
+              {data.stats.carriedFromPreviousRun} idea(s) carried over from the previous run so nothing was lost.
+            </p>
+          ) : null}
+        </section>
+      )}
 
       {!error && data && !data.ready && (
         <section className="rounded-xl border border-dashed border-hairline bg-surface-1/40 px-6 py-12 text-center">

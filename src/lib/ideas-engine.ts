@@ -106,7 +106,7 @@ export function brandTokenFor(site: string): string | null {
 async function pullQueryData(
   site: string,
   accessToken: string
-): Promise<{ totals: QueryRow[]; landingsByQuery: Map<string, Set<string>> }> {
+): Promise<{ totals: QueryRow[]; landingsByQuery: Map<string, Set<string>>; partialData: boolean }> {
   const oauth2 = new google.auth.OAuth2();
   oauth2.setCredentials({ access_token: accessToken });
   const searchconsole = google.searchconsole({ version: "v1", auth: oauth2 });
@@ -156,6 +156,7 @@ async function pullQueryData(
   }
 
   const landingsByQuery = new Map<string, Set<string>>();
+  let partialData = false;
   if (pageQueryRes.status === "fulfilled") {
     for (const r of ((pageQueryRes.value.data.rows ?? []) as GscRow[]) ?? []) {
       const path = normalizePath(r.keys?.[0] ?? "");
@@ -165,9 +166,16 @@ async function pullQueryData(
       set.add(path);
       landingsByQuery.set(q, set);
     }
+  } else {
+    // The page+query dimension failed. Without it we cannot distinguish true
+    // coverage gaps from "query that lands somewhere", so idea classes shift
+    // unpredictably. Flag the run so callers can warn the user (and the ideas
+    // route never lets a degraded run overwrite a healthier prior one).
+    partialData = true;
+    console.error("[ideas-engine] page+query dimension failed (partial data):", pageQueryRes.reason);
   }
 
-  return { totals: [...totalsMap.values()], landingsByQuery };
+  return { totals: [...totalsMap.values()], landingsByQuery, partialData };
 }
 
 export function overlapRatio(a: Set<string>, b: Set<string>): number {
@@ -430,7 +438,7 @@ export async function runIdeaResearch(userId: string, site: string, accessToken:
   const { page_content } = await getCollections();
   const contentDocs = await page_content.find({ userId, siteUrl: site }).toArray();
 
-  const { totals, landingsByQuery } = await pullQueryData(site, accessToken);
+  const { totals, landingsByQuery, partialData } = await pullQueryData(site, accessToken);
 
   const brand = brandTokenFor(site);
   let brandedFiltered = 0;
@@ -484,6 +492,7 @@ export async function runIdeaResearch(userId: string, site: string, accessToken:
       aiPackaged: false,
       discoveryPhrasings,
       discoveryTopics,
+      partialData,
     },
     ideas: capped,
   };
