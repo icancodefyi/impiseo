@@ -7,6 +7,7 @@ import {
   IconBulb,
   IconFileText,
   IconGauge,
+  IconKey,
   IconLayoutDashboard,
   IconLogout,
   IconPlug,
@@ -14,6 +15,7 @@ import {
   IconSearch,
   IconSparkles,
   IconTargetArrow,
+  IconTerminal2,
 } from "@tabler/icons-react";
 import { useDashboard } from "@/lib/dashboard-context";
 import { Loader, SignInCard } from "@/components/widgets";
@@ -29,6 +31,8 @@ const NAV_BOTTOM = [
   { href: "/dashboard/recommendations", label: "Recommendations", icon: IconBulb },
   { href: "/dashboard/technical", label: "Technical", icon: IconGauge },
   { href: "/dashboard/auditor", label: "Auditor", icon: IconReportAnalytics },
+  { href: "/dashboard/mcp-test", label: "MCP Test", icon: IconTerminal2 },
+  { href: "/dashboard/api-keys", label: "API Keys", icon: IconKey },
   { href: "/integrations", label: "Integrations", icon: IconPlug },
 ];
 
