@@ -143,6 +143,15 @@ export type PageRevenueDoc = {
   updatedAt: Date;
 };
 
+export type ApiKeyDoc = {
+  userId: string;
+  name: string;
+  keyHash: string;
+  prefix: string;
+  createdAt: Date;
+  lastUsedAt?: Date;
+};
+
 type Collections = {
   pages: import("mongodb").Collection<PageDoc>;
   page_content: import("mongodb").Collection<PageContentDoc>;
@@ -150,6 +159,7 @@ type Collections = {
   users: import("mongodb").Collection<UserDoc>;
   idea_runs: import("mongodb").Collection<IdeaRunDoc>;
   page_revenue: import("mongodb").Collection<PageRevenueDoc>;
+  api_keys: import("mongodb").Collection<ApiKeyDoc>;
 };
 
 let collections: Collections | null = null;
@@ -165,6 +175,7 @@ export async function getCollections(): Promise<Collections> {
   const users = db.collection<UserDoc>("users");
   const idea_runs = db.collection<IdeaRunDoc>("idea_runs");
   const page_revenue = db.collection<PageRevenueDoc>("page_revenue");
+  const api_keys = db.collection<ApiKeyDoc>("api_keys");
   await Promise.all([
     pages.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
     page_content.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
@@ -176,8 +187,10 @@ export async function getCollections(): Promise<Collections> {
     ),
     idea_runs.createIndex({ userId: 1, siteUrl: 1 }, { unique: true }),
     page_revenue.createIndex({ userId: 1, siteUrl: 1, path: 1 }, { unique: true }),
+    api_keys.createIndex({ keyHash: 1 }, { unique: true }),
+    api_keys.createIndex({ userId: 1, createdAt: -1 }),
   ]);
 
-  collections = { pages, page_content, rec_enhancements, users, idea_runs, page_revenue };
+  collections = { pages, page_content, rec_enhancements, users, idea_runs, page_revenue, api_keys };
   return collections;
 }
